@@ -1,0 +1,93 @@
+import logging
+import os
+
+from celery import shared_task
+
+logger = logging.getLogger(__name__)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def process_pdf_upload(
+    self, doc_id: int, temp_file_path: str, user_id: int, file_name: str
+):
+    from documents.models import Document
+    from documents.services.vector_store import ChromaVectorStore
+    from documents.services.pdf_processor import extract_and_chunk_pdf
+
+    def _cleanup_temp_file():
+        if os.path.exists(temp_file_path):
+            try:
+                os.remove(temp_file_path)
+            except OSError:
+                logger.warning(f"Could not remove temp file: {temp_file_path}")
+
+    try:
+        doc = Document.objects.get(id=doc_id)
+        doc.status = Document.Status.PROCESSING
+        doc.save(update_fields=["status"])
+
+        # Extract and chunk PDF
+        chunks = extract_and_chunk_pdf(temp_file_path)
+
+        if not chunks:
+            doc.status = Document.Status.ERROR
+            doc.error_message = "No text could be extracted from PDF"
+            doc.save(update_fields=["status", "error_message"])
+            logger.warning(f"No text extracted from document {doc_id}")
+            _cleanup_temp_file()
+            return {"status": "error", "message": "No text extracted"}
+
+        vector_store = ChromaVectorStore()
+        ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
+        metadatas = [
+            {
+                "user_id": str(user_id),
+                "doc_id": str(doc_id),
+                "chunk_idx": i,
+                "source": file_name,
+            }
+            for i in range(len(chunks))
+        ]
+
+        vector_store.add_documents(documents=chunks, ids=ids, metadatas=metadatas)
+
+        # Update document status
+        doc.chunk_count = len(chunks)
+        doc.status = Document.Status.READY
+        doc.save(update_fields=["chunk_count", "status"])
+
+        logger.info(f"Document {doc_id} processed: {len(chunks)} chunks")
+        _cleanup_temp_file()
+        return {"status": "success", "document_id": doc_id, "chunks": len(chunks)}
+
+    except Exception as exc:
+        logger.exception(f"Failed to process document {doc_id}")
+        try:
+            doc = Document.objects.get(id=doc_id)
+            doc.status = Document.Status.ERROR
+            doc.error_message = str(exc)[:500]
+            doc.save(update_fields=["status", "error_message"])
+        except Document.DoesNotExist:
+            pass
+
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=exc)
+
+        # Final failure — clean up temp file
+        _cleanup_temp_file()
+        raise
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=30)
+def delete_document_vectors_task(self, doc_id: int):
+    from documents.services.vector_store import ChromaVectorStore
+
+    try:
+        vector_store = ChromaVectorStore()
+        vector_store.delete(where={"doc_id": str(doc_id)})
+        logger.info(f"Deleted vectors for document {doc_id}")
+        return {"status": "success", "document_id": doc_id}
+
+    except Exception as exc:
+        logger.exception(f"Failed to delete vectors for document {doc_id}")
+        raise self.retry(exc=exc)
