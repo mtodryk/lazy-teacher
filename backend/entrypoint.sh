@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+echo "Applying migrations..."
+python manage.py migrate --noinput
+
+echo "Creating admin user if not exists..."
+
+python manage.py shell <<EOF
+from django.contrib.auth import get_user_model
+import os
+
+User = get_user_model()
+
+username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "admin")
+email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
+password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "admin123")
+
+try:
+    user, created = User.objects.get_or_create(
+        username=username,
+        defaults={
+            'email': email,
+            'is_staff': True,
+            'is_superuser': True
+        }
+    )
+    if created:
+        print("Creating superuser...")
+        user.set_password(password)
+        user.save()
+        print(f"Superuser '{username}' created successfully.")
+    else:
+        print(f"Superuser '{username}' already exists.")
+except Exception as e:
+    print(f"Error creating superuser: {e}")
+EOF
+
+echo "Starting: $@"
+exec "$@"

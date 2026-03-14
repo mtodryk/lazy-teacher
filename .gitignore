@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 db.sqlite3
+temp_uploads/
+chroma_db/

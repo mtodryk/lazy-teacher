@@ -1,0 +1,59 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  chroma:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - ANONYMIZED_TELEMETRY=false
+
+  backend:
+    build: ./backend
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      - EMBEDDING_MODEL_NAME=nomic-ai/nomic-embed-text-v1.5
+      - HF_HOME=/root/.cache/huggingface
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - chroma
+
+  celery:
+    build: ./backend
+    command: celery -A settings worker -l info --concurrency=1 --pool=prefork
+    volumes:
+      - ./backend:/app
+      - hf_cache:/root/.cache/huggingface
+    environment:
+      - EMBEDDING_MODEL_NAME=nomic-ai/nomic-embed-text-v1.5
+      - HF_HOME=/root/.cache/huggingface
+      - TRANSFORMERS_CACHE=/root/.cache/huggingface
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    depends_on:
+      - redis
+      - chroma
+
+volumes:
+  redis_data:
+  chroma_data:
+  hf_cache:
