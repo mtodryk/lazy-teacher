@@ -18,7 +18,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pl">
-      <body className={`${inter.className} bg-slate-50 min-h-screen`}>
+      <body
+        className={`${inter.className} bg-slate-50 min-h-screen`}
+        suppressHydrationWarning
+      >
         <AuthProvider>
           <Header />
           <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
