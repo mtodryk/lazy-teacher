@@ -4,19 +4,23 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   // Używamy funkcji login z kontekstu, bo po poprawnej rejestracji od razu dostajemy token!
-  const { login } = useAuth(); 
+  const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:8000/api/users/register/', {
+      const res = await fetch(`${API_URL}/api/users/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
@@ -31,13 +35,15 @@ export default function RegisterPage() {
       } else {
         // Złapane błędy z Django (np. nazwa zajęta)
         console.error("Szczegóły błędu:", data);
-        const errorMessage = data?.message || JSON.stringify(data?.extra) || 'Nieznany błąd zapytania.';
+        const errorMessage = typeof data?.message === 'string' ? data.message : 'Nieznany błąd zapytania.';
         setErrorMsg(`Nie udało się: ${errorMessage}`);
       }
     } catch (err) {
       console.error(err);
       // Ten błąd wyskoczy, gdy uderzymy w blokadę CORS
       setErrorMsg('Błąd połączenia. Przeglądarka zablokowała request (CORS) lub backend nie działa.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -63,6 +69,7 @@ export default function RegisterPage() {
               className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-zinc-100 outline-none transition-all placeholder-zinc-600"
               placeholder="np. LazyTeacher123"
               required
+              disabled={loading}
             />
           </div>
           <div>
@@ -75,13 +82,15 @@ export default function RegisterPage() {
               placeholder="••••••••"
               required
               minLength={8}
+              disabled={loading}
             />
           </div>
           <button
             type="submit"
-            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-lg mt-6 shadow-[0_0_15px_rgba(250,204,21,0.2)] transition-all active:scale-95 uppercase tracking-widest"
+            disabled={loading}
+            className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-black py-3 rounded-lg mt-6 shadow-[0_0_15px_rgba(250,204,21,0.2)] transition-all active:scale-95 uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Zarejestruj konto
+            {loading ? 'Rejestrowanie...' : 'Zarejestruj konto'}
           </button>
         </form>
         <p className="text-center text-zinc-500 mt-6 text-sm">

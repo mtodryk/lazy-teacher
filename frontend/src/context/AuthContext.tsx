@@ -1,7 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface AuthContextType {
   token: string | null;
@@ -13,19 +15,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [token, setToken] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    // Odczytanie tokenu przy starcie aplikacji
-    const storedToken = localStorage.getItem('token');
-    const storedUsername = localStorage.getItem('username');
-    if (storedToken) {
-      setToken(storedToken);
-      setUsername(storedUsername);
+  const [token, setToken] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('token');
     }
-  }, []);
+    return null;
+  });
+  const [username, setUsername] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('username');
+    }
+    return null;
+  });
+  const router = useRouter();
 
   const login = (newUsername: string, newToken: string) => {
     setToken(newToken);
@@ -38,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     if (token) {
       try {
-        await fetch('http://localhost:8000/api/users/logout/', {
+        await fetch(`${API_URL}/api/users/logout/`, {
           method: 'POST',
           headers: {
             'Authorization': `Token ${token}`,
