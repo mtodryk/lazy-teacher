@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #facc15; /* yellow-400 */
+  --color-primary-hover: #eab308; /* yellow-500 */
+}
+
+body {
+  /* bg-black dla tła, text-zinc-100 dla czytelnego tekstu */
+  @apply bg-black text-zinc-100;
+}

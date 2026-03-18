@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure-#ciefw)78-h6gmc%$w2^u1@i-7u*$#jf!evif-5d%an_31ky7-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -43,10 +43,12 @@ INSTALLED_APPS = [
     "documents",
     "users",
     "tests",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -161,3 +163,4 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
+CORS_ALLOW_ALL_ORIGINS = True
