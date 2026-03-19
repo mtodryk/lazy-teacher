@@ -37,7 +37,6 @@ def process_pdf_upload(
             _cleanup_temp_file()
             return {"status": "error", "message": "No text extracted"}
 
-        vector_store = ChromaVectorStore()
         ids = [f"{doc_id}_{i}" for i in range(len(chunks))]
         metadatas = [
             {
@@ -49,7 +48,9 @@ def process_pdf_upload(
             for i in range(len(chunks))
         ]
 
-        vector_store.add_documents(documents=chunks, ids=ids, metadatas=metadatas)
+        ChromaVectorStore().add_documents(
+            documents=chunks, ids=ids, metadatas=metadatas
+        )
 
         # Update document status
         doc.chunk_count = len(chunks)

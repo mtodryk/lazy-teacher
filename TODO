@@ -1,2 +1,0 @@
-1.delete loading of embedding model every request 
-2.ask LLM with all embedings and extract the most important topics
