@@ -150,6 +150,23 @@ class TestQuestions(APIView):
                             extra={"question_id": question.id},
                         )
 
+                    provided_answer_ids = set(a["id"] for a in answer_updates)
+
+                    all_existing_answer_ids = set(
+                        Answer.objects.filter(question=question).values_list(
+                            "id", flat=True
+                        )
+                    )
+                    missing_from_request = all_existing_answer_ids - provided_answer_ids
+                    if missing_from_request:
+                        raise ApplicationError(
+                            message="All existing answers must be provided in the request.",
+                            extra={
+                                "question_id": question.id,
+                                "missing_ids": sorted(missing_from_request),
+                            },
+                        )
+
                     answer_ids = [a["id"] for a in answer_updates]
                     existing_answers = {
                         a.id: a

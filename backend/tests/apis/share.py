@@ -75,10 +75,7 @@ class RetrieveTestByCode(APIView):
         try:
             test = Test.objects.prefetch_related("questions__answers").get(code=code)
         except Test.DoesNotExist:
-            raise ApplicationError(
-                message="Test with this code not found.",
-                extra={"code": code},
-            )
+            raise NotFound("Test with this code not found.")
 
         return Response(
             RetrieveTestByCodeResponseSerializer(

@@ -15,11 +15,10 @@ class Test(models.Model):
         on_delete=models.CASCADE,
         related_name="tests",
     )
-    code = models.CharField(max_length=100)
+    code = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("user", "code")
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
