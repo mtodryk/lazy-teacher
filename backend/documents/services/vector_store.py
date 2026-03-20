@@ -102,6 +102,21 @@ class ChromaVectorStore(BaseVectorStore):
             )
         return hits
 
+    def get_all_documents(self, where: dict | None = None) -> list[str]:
+        kwargs: dict = {"include": ["documents", "metadatas"]}
+        chroma_where = self._build_where(where)
+        if chroma_where:
+            kwargs["where"] = chroma_where
+
+        results = self._collection.get(**kwargs)
+
+        if not results["documents"]:
+            return []
+
+        pairs = zip(results["documents"], results["metadatas"])
+        sorted_pairs = sorted(pairs, key=lambda p: p[1].get("chunk_idx", 0))
+        return [text for text, _ in sorted_pairs]
+
     # ------------------------------------------------------------------
 
     @staticmethod

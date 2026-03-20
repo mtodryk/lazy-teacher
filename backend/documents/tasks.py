@@ -92,3 +92,54 @@ def delete_document_vectors_task(self, doc_id: int):
     except Exception as exc:
         logger.exception(f"Failed to delete vectors for document {doc_id}")
         raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=2, default_retry_delay=30)
+def extract_topics_task(self, doc_id: int, user_id: int):
+    from documents.models import Document, TopicExtractionResult
+    from documents.services.vector_store import ChromaVectorStore
+    from documents.services.topic_extraction import extract_topics
+    from django.conf import settings
+
+    try:
+        doc = Document.objects.get(id=doc_id, user_id=user_id)
+    except Document.DoesNotExist:
+        logger.error(f"Document {doc_id} not found for topic extraction")
+        return {"status": "error", "message": "Document not found"}
+
+    try:
+        chunks = ChromaVectorStore().get_all_documents(
+            where={"doc_id": str(doc_id), "user_id": str(user_id)}
+        )
+
+        if not chunks:
+            doc.error_message = "No chunks found in vector store"
+            doc.save(update_fields=["error_message"])
+            return {"status": "error", "message": "No chunks found"}
+
+        topics = extract_topics(chunks)
+
+        TopicExtractionResult.objects.update_or_create(
+            document=doc,
+            defaults={
+                "topics": topics,
+                "model_used": settings.AZURE_OPENAI_DEPLOYMENT,
+                "chunk_count_used": len(chunks),
+            },
+        )
+
+        logger.info(f"Extracted {len(topics)} topics for document {doc_id}")
+        return {
+            "status": "success",
+            "document_id": doc_id,
+            "topic_count": len(topics),
+        }
+
+    except Exception as exc:
+        logger.exception(f"Failed to extract topics for document {doc_id}")
+        doc.error_message = f"Topic extraction failed: {str(exc)[:500]}"
+        doc.save(update_fields=["error_message"])
+
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=exc)
+        raise

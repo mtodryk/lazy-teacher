@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from ..models import Document
+from ..models import Document, TopicExtractionResult
 
 
 # ── Request serializers ──────────────────────────────────────────────
@@ -63,3 +63,25 @@ class DocumentItemResponseSerializer(serializers.ModelSerializer):
             "uploaded_at",
             "error_message",
         ]
+
+
+class TopicExtractionResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TopicExtractionResult
+        fields = [
+            "id",
+            "document",
+            "topics",
+            "extracted_at",
+            "model_used",
+            "chunk_count_used",
+        ]
+
+
+# ── Quiz serializers ─────────────────────────────────────────────────
+
+
+class QuizRequestSerializer(serializers.Serializer):
+    count = serializers.IntegerField(default=5, min_value=1, max_value=30)
+    max_distance = serializers.FloatField(default=0.5, min_value=0.0, max_value=2.0)
+    chunks_per_question = serializers.IntegerField(default=3, min_value=1, max_value=10)
