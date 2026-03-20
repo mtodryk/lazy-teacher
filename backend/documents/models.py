@@ -30,3 +30,18 @@ class Document(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.status})"
+
+
+class TopicExtractionResult(models.Model):
+    document = models.OneToOneField(
+        Document,
+        on_delete=models.CASCADE,
+        related_name="topic_extraction",
+    )
+    topics = models.JSONField(default=list)
+    extracted_at = models.DateTimeField(auto_now_add=True)
+    model_used = models.CharField(max_length=30)
+    chunk_count_used = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"Topics for {self.document.title} ({len(self.topics)} topics)"

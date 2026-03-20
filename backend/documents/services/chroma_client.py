@@ -16,27 +16,26 @@ def get_chroma_client() -> ClientAPI:
     )
 
 
+_embedding_fn: SentenceTransformerEmbeddingFunction | None = None
+
+
 def get_embedding_function() -> SentenceTransformerEmbeddingFunction:
-    logger.info(
-        f"Initializing embedding function with model: {settings.EMBEDDING_MODEL_NAME}"
-    )
-    ef = SentenceTransformerEmbeddingFunction(
-        model_name=settings.EMBEDDING_MODEL_NAME,
-        cache_folder=os.environ.get("HF_HOME", "/root/.cache/huggingface"),
-        trust_remote_code=True,
-    )
-
-    logger.info("Embedding function initialized successfully")
-
-    return ef
+    global _embedding_fn
+    if _embedding_fn is None:
+        logger.info(
+            f"Initializing embedding function with model: {settings.EMBEDDING_MODEL_NAME}"
+        )
+        _embedding_fn = SentenceTransformerEmbeddingFunction(
+            model_name=settings.EMBEDDING_MODEL_NAME,
+            trust_remote_code=True,
+        )
+        logger.info("Embedding function initialized successfully")
+    return _embedding_fn
 
 
 def get_chroma_collection() -> Collection:
-    client: ClientAPI = get_chroma_client()
-    embedding_fn = get_embedding_function()
-
-    return client.get_or_create_collection(
+    return get_chroma_client().get_or_create_collection(
         name="rag_documents",
-        embedding_function=embedding_fn,
+        embedding_function=get_embedding_function(),
         metadata={"hnsw:space": "cosine"},
     )

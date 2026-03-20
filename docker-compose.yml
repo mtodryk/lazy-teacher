@@ -1,4 +1,13 @@
 services:
+  db:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
   redis:
     image: redis:7-alpine
     ports:
@@ -19,42 +28,42 @@ services:
     build: ./backend
     image: myapp-backend:latest
     command: python manage.py runserver 0.0.0.0:8000
+    restart: on-failure
     ports:
       - "8000:8000"
     volumes:
       - ./backend:/app
       - hf_cache:/root/.cache/huggingface
-    environment:
-      - EMBEDDING_MODEL_NAME=nomic-ai/nomic-embed-text-v1.5
-      - HF_HOME=/root/.cache/huggingface
-      - TRANSFORMERS_CACHE=/root/.cache/huggingface
-      - CHROMA_HOST=chroma
-      - CHROMA_PORT=8000
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
-      - redis
-      - chroma
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+      chroma:
+        condition: service_started
 
   celery:
     image: myapp-backend:latest
+    entrypoint: []
     command: celery -A settings worker -l info --concurrency=1 --pool=prefork
+    restart: on-failure
     volumes:
       - ./backend:/app
       - hf_cache:/root/.cache/huggingface
-    environment:
-      - EMBEDDING_MODEL_NAME=nomic-ai/nomic-embed-text-v1.5
-      - HF_HOME=/root/.cache/huggingface
-      - TRANSFORMERS_CACHE=/root/.cache/huggingface
-      - CHROMA_HOST=chroma
-      - CHROMA_PORT=8000
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
-      - redis
-      - chroma
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+      chroma:
+        condition: service_started
 
 volumes:
+  postgres_data:
   redis_data:
   chroma_data:
   hf_cache:
