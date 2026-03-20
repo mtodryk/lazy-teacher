@@ -3,6 +3,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 
@@ -13,6 +14,8 @@ from .serializers import TopicExtractionResponseSerializer
 
 class ExtractTopics(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "expensive_operation"
     serializer_class = TopicExtractionResponseSerializer
 
     @extend_schema(responses={202: TopicExtractionResponseSerializer})

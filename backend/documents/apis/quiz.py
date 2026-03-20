@@ -2,6 +2,7 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from tests.models import Test
@@ -16,6 +17,8 @@ from .serializers import QuizRequestSerializer
 
 class GenerateQuiz(APIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "expensive_operation"
     serializer_class = QuizRequestSerializer
 
     def post(self, request: Request, doc_id: int) -> Response:
