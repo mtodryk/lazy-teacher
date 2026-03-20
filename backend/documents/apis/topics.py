@@ -16,9 +16,7 @@ class ExtractTopics(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "expensive_operation"
-    serializer_class = TopicExtractionResponseSerializer
 
-    @extend_schema(responses={202: TopicExtractionResponseSerializer})
     def post(self, request: Request, doc_id: int) -> Response:
         try:
             doc = Document.objects.get(
