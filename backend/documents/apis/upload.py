@@ -3,6 +3,7 @@ import os
 import uuid
 
 from django.conf import settings as django_settings
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
@@ -23,7 +24,25 @@ class UploadPDF(APIView):
 
     parser_classes = [MultiPartParser]
     permission_classes = [IsAuthenticated]
+    serializer_class = UploadPDFRequestSerializer
 
+    @extend_schema(
+        summary="Wgraj plik PDF",
+        request={
+            "multipart/form-data": {
+                "type": "object",
+                "properties": {
+                    "file": {
+                        "type": "string",
+                        "format": "binary",
+                        "description": "Plik PDF",
+                    }
+                },
+                "required": ["file"],
+            }
+        },
+        responses={202: UploadSuccessResponseSerializer},
+    )
     def post(self, request: Request) -> Response:
         serializer = UploadPDFRequestSerializer(
             data=request.data, context={"request": request}

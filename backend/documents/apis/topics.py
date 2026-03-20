@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 
 from ..models import Document, TopicExtractionResult
 from ..tasks import extract_topics_task
@@ -12,7 +13,9 @@ from .serializers import TopicExtractionResponseSerializer
 
 class ExtractTopics(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = TopicExtractionResponseSerializer
 
+    @extend_schema(responses={202: TopicExtractionResponseSerializer})
     def post(self, request: Request, doc_id: int) -> Response:
         try:
             doc = Document.objects.get(
@@ -37,6 +40,7 @@ class ExtractTopics(APIView):
 
 class TopicExtractionDetail(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = TopicExtractionResponseSerializer
 
     def get(self, request: Request, doc_id: int) -> Response:
         try:

@@ -11,6 +11,7 @@ from .serializers import SearchRequestSerializer, SearchSuccessResponseSerialize
 
 class GetRelevantChunks(APIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = SearchRequestSerializer
 
     def post(self, request: Request) -> Response:
         serializer = SearchRequestSerializer(data=request.data)
