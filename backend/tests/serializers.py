@@ -26,6 +26,9 @@ class TestCreateSerializer(serializers.Serializer):
     code = serializers.CharField(min_length=1, max_length=100)
     document_id = serializers.IntegerField()
 
+# change test status (active/inactive)
+class TestUpdateSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
 
 class TestResponseSerializer(serializers.ModelSerializer):
     questions = QuestionResponseSerializer(many=True, read_only=True)
@@ -33,7 +36,8 @@ class TestResponseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Test
-        fields = ["id", "code", "document_id", "questions", "created_at"]
+        fields = ["id", "code", "document_id", "is_active", "questions", "created_at"]
+
 
 
 # ── Bulk update serializers ──────────────────────────────────────────
@@ -112,3 +116,26 @@ class TestQuestionForShareSerializer(serializers.Serializer):
 class RetrieveTestByCodeResponseSerializer(serializers.Serializer):
     test_id = serializers.IntegerField()
     questions = TestQuestionForShareSerializer(many=True)
+
+# For incoming submission data
+class SubmitAnswerSerializer(serializers.Serializer):
+    question = serializers.IntegerField()
+    answer_id = serializers.IntegerField()
+
+class TestSubmissionSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    answers = SubmitAnswerSerializer(many=True)
+
+# For response data
+class SubmissionAnswerResponseSerializer(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    correct_answer_id = serializers.IntegerField()
+    selected_answer_id = serializers.IntegerField()
+    is_correct = serializers.BooleanField()
+
+class TestSubmissionResponseSerializer(serializers.Serializer):
+    score = serializers.IntegerField()
+    max_score = serializers.IntegerField()
+    percentage = serializers.FloatField()
+    passed = serializers.BooleanField()
+    answers = SubmissionAnswerResponseSerializer(many=True)

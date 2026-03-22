@@ -2,6 +2,7 @@ from .tests import ListTests, TestDetail
 from .questions import TestQuestions, QuestionDetail
 from .answers import AnswerDetail
 from .share import ShareLink, RetrieveTestByCode
+from .submit import SubmitTest
 
 __all__ = [
     "ListTests",
@@ -11,4 +12,5 @@ __all__ = [
     "AnswerDetail",
     "ShareLink",
     "RetrieveTestByCode",
+    "SubmitTest",
 ]
