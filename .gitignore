@@ -5,4 +5,5 @@ db.sqlite3
 temp_uploads/
 chroma_db/
 TODO
-.env
+.env/
+.idea/
