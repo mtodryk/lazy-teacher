@@ -7,7 +7,7 @@ export default function Header() {
   const { token, username, logout } = useAuth();
 
   return (
-    <header className="bg-zinc-900 border-b border-zinc-800 text-zinc-100 shadow-[0_4px_30px_rgba(0,0,0,0.5)]">
+    <header className="fixed top-0 left-0 w-full z-50 bg-zinc-900 border-b border-zinc-800 text-zinc-100 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20 relative">
           
