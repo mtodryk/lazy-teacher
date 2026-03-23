@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Answer, Question, Test
+from .models import Answer, Question, Test, TestSubmission, SubmittedAnswer
 
 
 class AnswerResponseSerializer(serializers.ModelSerializer):
@@ -139,3 +139,25 @@ class TestSubmissionResponseSerializer(serializers.Serializer):
     percentage = serializers.FloatField()
     passed = serializers.BooleanField()
     answers = SubmissionAnswerResponseSerializer(many=True)
+
+# For checking submissions by test author
+class SubmittedAnswerDetailSerializer(serializers.ModelSerializer):
+    question_text = serializers.CharField(source="question.text", read_only=True)
+    selected_answer_text = serializers.CharField(source="selected_answer.text", read_only=True, allow_null=True)
+    correct_answer_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SubmittedAnswer
+        fields = ["question_id", "selected_answer_id", "is_correct", "question_text", "selected_answer_text", "correct_answer_id"]
+
+    def get_correct_answer_id(self, obj):
+        # Finding correct answer for the question
+        correct = obj.question.answers.filter(is_correct=True).first()
+        return correct.id if correct else None
+
+class TestSubmissionDetailSerializer(serializers.ModelSerializer):
+    answers = SubmittedAnswerDetailSerializer(source="submitted_answers", many=True, read_only=True)
+
+    class Meta:
+        model = TestSubmission
+        fields = ["id", "student_name", "score", "max_score", "percentage", "passed", "submitted_at", "answers"]
