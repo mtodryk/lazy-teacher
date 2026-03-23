@@ -9,6 +9,7 @@ from .apis import (
     ShareLink,
     RetrieveTestByCode,
     SubmitTest,
+    TestSubmissionsView,
 )
 
 urlpatterns = [
@@ -43,5 +44,10 @@ urlpatterns = [
         "<int:test_id>/submit/",
         SubmitTest.as_view(),
         name="submit_test",
+    ),
+    path(
+        "<int:test_id>/submissions/",
+        TestSubmissionsView.as_view(),
+        name="test_submissions",
     ),
 ]
