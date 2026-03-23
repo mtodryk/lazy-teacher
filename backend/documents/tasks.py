@@ -66,6 +66,25 @@ def process_pdf_upload(
 
         logger.info(f"Document {doc_id} processed: {len(chunks)} chunks")
         _cleanup_temp_file()
+
+        try:
+            from documents.services.topic_extraction import extract_topics
+            from documents.models import TopicExtractionResult
+            from django.conf import settings as django_settings
+
+            topics = extract_topics(chunks)
+            TopicExtractionResult.objects.update_or_create(
+                document=doc,
+                defaults={
+                    "topics": topics,
+                    "model_used": django_settings.AZURE_OPENAI_DEPLOYMENT,
+                    "chunk_count_used": len(chunks),
+                },
+            )
+            logger.info(f"Extracted {len(topics)} topics for document {doc_id}")
+        except Exception:
+            logger.exception(f"Topic extraction failed for document {doc_id}")
+
         return {"status": "success", "document_id": doc_id, "chunks": len(chunks)}
 
     except Exception as exc:
