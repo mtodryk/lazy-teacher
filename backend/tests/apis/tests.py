@@ -4,9 +4,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_spectacular.utils import extend_schema
 
 from ..models import Test
-from ..serializers import TestResponseSerializer
+from ..serializers import TestResponseSerializer, TestUpdateSerializer
 
 
 class ListTests(APIView):
@@ -43,3 +44,17 @@ class TestDetail(APIView):
         test = self._get_test(test_id, request.user)
         test.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def patch(self, request: Request, test_id: int) -> Response:
+        test = self._get_test(test_id, request.user)
+
+        if "is_active" not in request.data:
+            return Response(
+                {"detail": "is_active field is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        test.is_active = bool(request.data["is_active"])
+        test.save(update_fields=["is_active"])
+
+        return Response(TestResponseSerializer(test).data, status=status.HTTP_200_OK)

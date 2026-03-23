@@ -73,7 +73,7 @@ class RetrieveTestByCode(APIView):
     def get(self, request: Request, code: str) -> Response:
         """Get test questions by code without answers."""
         try:
-            test = Test.objects.prefetch_related("questions__answers").get(code=code)
+            test = Test.objects.prefetch_related("questions__answers").get(code=code, is_active=True)
         except Test.DoesNotExist:
             raise NotFound("Test with this code not found.")
 
