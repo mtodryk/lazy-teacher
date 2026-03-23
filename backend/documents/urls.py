@@ -3,7 +3,6 @@ from django.urls import path
 from .apis import (
     DocumentApi,
     DocumentDownloadURL,
-    ExtractTopics,
     GenerateQuiz,
     GetRelevantChunks,
     ListDocuments,
@@ -25,11 +24,6 @@ urlpatterns = [
         "<int:doc_id>/download-url/",
         DocumentDownloadURL.as_view(),
         name="documents-download-url",
-    ),
-    path(
-        "<int:doc_id>/extract-topics/",
-        ExtractTopics.as_view(),
-        name="documents-extract-topics",
     ),
     path(
         "<int:doc_id>/topics/",
