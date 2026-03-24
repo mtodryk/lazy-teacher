@@ -27,7 +27,7 @@ class GenerateQuiz(APIView):
         data = data.validated_data
 
         doc = Document.objects.get(
-            id=doc_id, user=request.user, status=Document.Status.READY
+            id=doc_id, user=request.user, status=Document.Status.TOPICS_EXTRACTED
         )
         topics = TopicExtractionResult.objects.get(document=doc).topics
 

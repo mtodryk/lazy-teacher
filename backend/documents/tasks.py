@@ -2,6 +2,7 @@ import logging
 import os
 
 from celery import shared_task
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -73,14 +74,20 @@ def process_pdf_upload(
             from django.conf import settings as django_settings
 
             topics = extract_topics(chunks)
-            TopicExtractionResult.objects.update_or_create(
-                document=doc,
-                defaults={
-                    "topics": topics,
-                    "model_used": django_settings.AZURE_OPENAI_DEPLOYMENT,
-                    "chunk_count_used": len(chunks),
-                },
-            )
+
+            with transaction.atomic():
+                TopicExtractionResult.objects.update_or_create(
+                    document=doc,
+                    defaults={
+                        "topics": topics,
+                        "model_used": django_settings.AZURE_OPENAI_DEPLOYMENT,
+                        "chunk_count_used": len(chunks),
+                    },
+                )
+                doc.refresh_from_db()
+                doc.status = Document.Status.TOPICS_EXTRACTED
+                doc.save(update_fields=["status"])
+
             logger.info(f"Extracted {len(topics)} topics for document {doc_id}")
         except Exception:
             logger.exception(f"Topic extraction failed for document {doc_id}")
