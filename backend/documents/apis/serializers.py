@@ -18,10 +18,9 @@ class UploadPDFRequestSerializer(serializers.Serializer):
     def validate_file(self, value):
         if not value.name.lower().endswith(".pdf"):
             raise serializers.ValidationError("Only PDF files are allowed.")
-        max_size = 50 * 1024 * 1024  # 50 MB
         from django.conf import settings as django_settings
 
-        max_mb = getattr(django_settings, "RAG_MAX_UPLOAD_SIZE_MB", 50)
+        max_mb = getattr(django_settings, "RAG_MAX_UPLOAD_SIZE_MB", 30)
         max_size = max_mb * 1024 * 1024
         if value.size and value.size > max_size:
             raise serializers.ValidationError(f"File too large (max {max_mb} MB).")
@@ -65,6 +64,7 @@ class DocumentItemResponseSerializer(serializers.ModelSerializer):
         ]
 
 
+
 class TopicExtractionResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicExtractionResult
@@ -76,6 +76,20 @@ class TopicExtractionResponseSerializer(serializers.ModelSerializer):
             "model_used",
             "chunk_count_used",
         ]
+
+
+class TopicAddRequestSerializer(serializers.Serializer):
+    topic = serializers.CharField(min_length=1, max_length=500)
+
+
+class TopicDeleteRequestSerializer(serializers.Serializer):
+    topic = serializers.CharField(min_length=1, max_length=500)
+
+
+class DocumentURLResponseSerializer(serializers.Serializer):
+    document_id = serializers.IntegerField()
+    url = serializers.URLField()
+    expires_in = serializers.IntegerField()
 
 
 # ── Quiz serializers ─────────────────────────────────────────────────

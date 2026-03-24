@@ -64,7 +64,7 @@ class ShareLink(APIView):
 class RetrieveTestByCode(APIView):
     """Retrieve test questions by share code (without answers)."""
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
     serializer_class = RetrieveTestByCodeResponseSerializer
 
     @extend_schema(

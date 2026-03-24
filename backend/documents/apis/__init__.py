@@ -1,7 +1,7 @@
-from .documents import DocumentApi, ListDocuments
+from .documents import DocumentApi, DocumentDownloadURL, ListDocuments
 from .quiz import GenerateQuiz
 from .search import GetRelevantChunks
-from .topics import ExtractTopics, TopicExtractionDetail
+from .topics import ManageTopic, TopicExtractionDetail
 from .upload import UploadPDF
 
 __all__ = [
@@ -9,7 +9,8 @@ __all__ = [
     "GetRelevantChunks",
     "ListDocuments",
     "DocumentApi",
-    "ExtractTopics",
+    "DocumentDownloadURL",
+    "ManageTopic",
     "TopicExtractionDetail",
     "GenerateQuiz",
 ]

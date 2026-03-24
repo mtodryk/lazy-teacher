@@ -16,6 +16,7 @@ class Document(models.Model):
     )
     title = models.CharField(max_length=255)
     file_name = models.CharField(max_length=255)
+    s3_key = models.CharField(max_length=512, blank=True, default="")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     chunk_count = models.PositiveIntegerField(default=0)
     status = models.CharField(

@@ -168,7 +168,7 @@ EMBEDDING_MODEL_NAME = os.environ.get(
 # RAG_VECTOR_STORE_BACKEND = "documents.services.vector_store.ChromaVectorStore"
 RAG_CHUNK_SIZE = 800
 RAG_CHUNK_OVERLAP = 120
-RAG_MAX_UPLOAD_SIZE_MB = 50
+RAG_MAX_UPLOAD_SIZE_MB = int(os.environ.get("RAG_MAX_UPLOAD_SIZE_MB", "30"))
 
 # Celery configuration
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379/0")
@@ -182,7 +182,23 @@ CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutes max per task
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_ACCEPT_CONTENT = ["json"]
-CORS_ALLOW_ALL_ORIGINS = True
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+
+# AWS S3 configuration
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
+AWS_S3_BUCKET_NAME = os.environ.get("AWS_S3_BUCKET_NAME", "")
+AWS_S3_REGION_NAME = os.environ.get("AWS_S3_REGION_NAME", "eu-central-1")
+AWS_S3_PRESIGNED_URL_EXPIRY = int(
+    os.environ.get("AWS_S3_PRESIGNED_URL_EXPIRY", "3600")
+)
 
 # Azure OpenAI configuration
 AZURE_OPENAI_ENDPOINT = os.environ.get("AZURE_OPENAI_ENDPOINT", "")
@@ -191,3 +207,8 @@ AZURE_OPENAI_API_VERSION = os.environ.get(
     "AZURE_OPENAI_API_VERSION", "2024-12-01-preview"
 )
 AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "gpt-4o")
+
+
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

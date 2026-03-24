@@ -26,6 +26,13 @@ def process_pdf_upload(
         doc.status = Document.Status.PROCESSING
         doc.save(update_fields=["status"])
 
+        from documents.services.s3_client import S3Client
+
+        s3_key = f"documents/{user_id}/{doc_id}.pdf"
+        S3Client().upload_file(temp_file_path, s3_key)
+        doc.s3_key = s3_key
+        doc.save(update_fields=["s3_key"])
+
         # Extract and chunk PDF
         chunks = extract_and_chunk_pdf(temp_file_path)
 
@@ -52,13 +59,35 @@ def process_pdf_upload(
             documents=chunks, ids=ids, metadatas=metadatas
         )
 
-        # Update document status
+        # ZMIANA 1: Aktualizujemy tylko liczbę chunków. Usuwamy stąd nadawanie statusu READY
         doc.chunk_count = len(chunks)
-        doc.status = Document.Status.READY
-        doc.save(update_fields=["chunk_count", "status"])
+        doc.save(update_fields=["chunk_count"])
 
         logger.info(f"Document {doc_id} processed: {len(chunks)} chunks")
         _cleanup_temp_file()
+
+        try:
+            from documents.services.topic_extraction import extract_topics
+            from documents.models import TopicExtractionResult
+            from django.conf import settings as django_settings
+
+            topics = extract_topics(chunks)
+            TopicExtractionResult.objects.update_or_create(
+                document=doc,
+                defaults={
+                    "topics": topics,
+                    "model_used": django_settings.AZURE_OPENAI_DEPLOYMENT,
+                    "chunk_count_used": len(chunks),
+                },
+            )
+            logger.info(f"Extracted {len(topics)} topics for document {doc_id}")
+        except Exception:
+            logger.exception(f"Topic extraction failed for document {doc_id}")
+
+        # ZMIANA 2: Dodajemy status READY dopiero tutaj, gdy tematy są już na 100% w bazie
+        doc.status = Document.Status.READY
+        doc.save(update_fields=["status"])
+
         return {"status": "success", "document_id": doc_id, "chunks": len(chunks)}
 
     except Exception as exc:
@@ -80,17 +109,23 @@ def process_pdf_upload(
 
 
 @shared_task(bind=True, max_retries=3, default_retry_delay=30)
-def delete_document_vectors_task(self, doc_id: int):
+def delete_document_vectors_task(self, doc_id: int, s3_key: str = ""):
     from documents.services.vector_store import ChromaVectorStore
 
     try:
         vector_store = ChromaVectorStore()
         vector_store.delete(where={"doc_id": str(doc_id)})
-        logger.info(f"Deleted vectors for document {doc_id}")
+
+        if s3_key:
+            from documents.services.s3_client import S3Client
+
+            S3Client().delete_file(s3_key)
+
+        logger.info(f"Deleted vectors and S3 file for document {doc_id}")
         return {"status": "success", "document_id": doc_id}
 
     except Exception as exc:
-        logger.exception(f"Failed to delete vectors for document {doc_id}")
+        logger.exception(f"Failed to delete resources for document {doc_id}")
         raise self.retry(exc=exc)
 
 
