@@ -64,7 +64,6 @@ class DocumentItemResponseSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class TopicExtractionResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicExtractionResult
