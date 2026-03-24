@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+db.sqlite3
+temp_uploads/
+chroma_db/
+TODO
+.env
+.idea/
+api_client_example.py
+search_delete_client.py
+pdfs/
+
