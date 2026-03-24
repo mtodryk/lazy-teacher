@@ -10,7 +10,6 @@ urlpatterns = [
     path("api/documents/", include("documents.urls")),
     path("api/users/", include("users.urls")),
     path("api/tests/", include("tests.urls")),
-
     # Swagger / OpenAPI
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
