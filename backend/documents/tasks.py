@@ -84,10 +84,6 @@ def process_pdf_upload(
         except Exception:
             logger.exception(f"Topic extraction failed for document {doc_id}")
 
-        # ZMIANA 2: Dodajemy status READY dopiero tutaj, gdy tematy są już na 100% w bazie
-        doc.status = Document.Status.READY
-        doc.save(update_fields=["status"])
-
         return {"status": "success", "document_id": doc_id, "chunks": len(chunks)}
 
     except Exception as exc:
