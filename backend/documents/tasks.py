@@ -59,9 +59,10 @@ def process_pdf_upload(
             documents=chunks, ids=ids, metadatas=metadatas
         )
 
-        # ZMIANA 1: Aktualizujemy tylko liczbę chunków. Usuwamy stąd nadawanie statusu READY
+        # Update document status
         doc.chunk_count = len(chunks)
-        doc.save(update_fields=["chunk_count"])
+        doc.status = Document.Status.READY
+        doc.save(update_fields=["chunk_count", "status"])
 
         logger.info(f"Document {doc_id} processed: {len(chunks)} chunks")
         _cleanup_temp_file()
