@@ -29,12 +29,14 @@ class QuizGenerationService:
         topic: str,
         max_distance: float = 0.5,
         chunks_per_question: int = 3,
+        doc_id: int | None = None,
     ) -> Optional[QuestionData]:
 
         context = self.retriever.retrieve_for_topic(
             topic=topic,
             max_results=chunks_per_question,
             max_distance=max_distance,
+            doc_id=doc_id,
         )
 
         try:

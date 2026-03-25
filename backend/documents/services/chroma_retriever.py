@@ -10,12 +10,18 @@ class ChromaRetriever:
         self,
         query: str,
         n_results: int = 5,
+        doc_id: int | None = None,
     ) -> RetrievalContext:
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=n_results,
-            include=["documents", "distances"],
-        )
+        kwargs = {
+            "query_texts": [query],
+            "n_results": n_results,
+            "include": ["documents", "distances"],
+        }
+
+        if doc_id is not None:
+            kwargs["where"] = {"doc_id": str(doc_id)}
+
+        results = self.collection.query(**kwargs)
 
         return RetrievalContext(
             documents=results["documents"][0],
@@ -27,9 +33,10 @@ class ChromaRetriever:
         topic: str,
         max_results: int = 5,
         max_distance: float = 0.5,
+        doc_id: int | None = None,
     ) -> RetrievalContext:
 
-        context = self.retrieve(query=topic, n_results=max_results + 2)
+        context = self.retrieve(query=topic, n_results=max_results + 2, doc_id=doc_id)
 
         good_docs = []
         good_dists = []

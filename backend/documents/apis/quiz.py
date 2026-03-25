@@ -40,6 +40,7 @@ class GenerateQuiz(APIView):
             collection=get_chroma_collection(),
             max_distance=data["max_distance"],
             chunks_per_question=data["chunks_per_question"],
+            doc_id=doc_id,
         )
 
         if not quiz_data:

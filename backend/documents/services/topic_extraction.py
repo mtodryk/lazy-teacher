@@ -45,6 +45,7 @@ def generate_rag_quiz(
     collection,
     max_distance: float = 0.5,
     chunks_per_question: int = 3,
+    doc_id: int | None = None,
 ) -> list[dict]:
     """
     Generate quiz questions using RAG + LLM.
@@ -55,6 +56,7 @@ def generate_rag_quiz(
         collection: ChromaDB collection for retrieval
         max_distance: Maximum distance for context relevance
         chunks_per_question: Number of context chunks to use per question
+        doc_id: Document ID to filter retrieval results (critical for multi-document systems)
 
     Returns:
         List of QuestionData dictionaries ready for database insertion
@@ -70,6 +72,7 @@ def generate_rag_quiz(
             topic=next(topic_cycle),
             max_distance=max_distance,
             chunks_per_question=chunks_per_question,
+            doc_id=doc_id,
         )
 
         if question:
