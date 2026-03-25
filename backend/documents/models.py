@@ -7,6 +7,7 @@ class Document(models.Model):
         PENDING = "pending", "Pending"
         PROCESSING = "processing", "Processing"
         READY = "ready", "Ready"
+        TOPICS_EXTRACTED = "topics_extracted", "Topics Extracted"
         ERROR = "error", "Error"
 
     user = models.ForeignKey(

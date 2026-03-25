@@ -1,15 +1,21 @@
-
 from rest_framework import status
 from rest_framework.exceptions import NotFound, ValidationError, PermissionDenied
-from rest_framework.permissions import AllowAny, IsAuthenticated  # Or IsAuthenticated if you want to restrict
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+)  # Or IsAuthenticated if you want to restrict
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth.models import User
 from ..models import Test, Question, Answer, TestSubmission, SubmittedAnswer
-from ..serializers import TestSubmissionSerializer, TestSubmissionResponseSerializer, TestSubmissionDetailSerializer
+from ..serializers import (
+    TestSubmissionSerializer,
+    TestSubmissionResponseSerializer,
+    TestSubmissionDetailSerializer,
+)
 
 
 class SubmitTest(APIView):
@@ -18,7 +24,9 @@ class SubmitTest(APIView):
 
     def _get_test(self, test_id: int):
         try:
-            return Test.objects.prefetch_related("questions__answers").get(id=test_id, is_active=True)
+            return Test.objects.prefetch_related("questions__answers").get(
+                id=test_id, is_active=True
+            )
         except Test.DoesNotExist:
             raise NotFound("Test not found or inactive.")
 
@@ -65,12 +73,14 @@ class SubmitTest(APIView):
             if is_correct:
                 score += 1
 
-            response_answers.append({
-                "question_id": q_id,
-                "correct_answer_id": correct_answer_id,
-                "selected_answer_id": selected_id,
-                "is_correct": is_correct,
-            })
+            response_answers.append(
+                {
+                    "question_id": q_id,
+                    "correct_answer_id": correct_answer_id,
+                    "selected_answer_id": selected_id,
+                    "is_correct": is_correct,
+                }
+            )
 
         percentage = (score / max_score) * 100 if max_score > 0 else 0
         passed = percentage >= 50  # More than half to pass, adjust if needed
@@ -92,18 +102,17 @@ class SubmitTest(APIView):
                 is_correct=ans_data["is_correct"],
             )
 
-        response_serializer = TestSubmissionResponseSerializer({
-            "score": score,
-            "max_score": max_score,
-            "percentage": round(percentage, 2),
-            "passed": passed,
-            "answers": response_answers,
-        })
+        response_serializer = TestSubmissionResponseSerializer(
+            {
+                "score": score,
+                "max_score": max_score,
+                "percentage": round(percentage, 2),
+                "passed": passed,
+                "answers": response_answers,
+            }
+        )
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
-
-# View for submissions
-User = get_user_model()
 
 class TestSubmissionsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -121,7 +130,7 @@ class TestSubmissionsView(APIView):
         test = self._get_test(test_id, request.user)
         submissions = TestSubmission.objects.filter(test=test).prefetch_related(
             "submitted_answers__question__answers",  # Dla correct_answer_id
-            "submitted_answers__selected_answer"
+            "submitted_answers__selected_answer",
         )
         serializer = TestSubmissionDetailSerializer(submissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
