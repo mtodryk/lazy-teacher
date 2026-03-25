@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, notFound } from 'next/navigation';
-import { useEffect, useState, use } from 'react';
+import { useEffect, useState, useCallback, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
@@ -26,6 +26,15 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const [newTopic, setNewTopic] = useState('');
   const [isManaging, setIsManaging] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // Toast notifications
+  const [toasts, setToasts] = useState<{ id: number; message: string; type: 'error' | 'info' }[]>([]);
+
+  const showToast = useCallback((message: string, type: 'error' | 'info' = 'error') => {
+    const toastId = Date.now();
+    setToasts((prev) => [...prev, { id: toastId, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== toastId)), 4000);
+  }, []);
 
   // --- NOWY STAN DLA OBSŁUGI BŁĘDU 500 ---
   const [asyncError, setAsyncError] = useState<Error | null>(null);
@@ -52,7 +61,10 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
           }
         });
 
-        if (res.status === 401) { logout(); return; }
+        if (res.status === 401) {
+          logout();
+          return;
+        }
         if (res.status === 404) notFound();
         if (!res.ok) throw new Error(`Błąd serwera: ${res.status}`);
 
@@ -126,7 +138,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       if (data.url) {
         window.open(data.url, '_blank');
       } else {
-        alert('Backend nie zwrócił adresu URL.');
+        showToast('Backend nie zwrócił adresu URL.');
       }
     } catch (err: any) {
       if (err.digest === 'NEXT_NOT_FOUND') throw err;
@@ -209,7 +221,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       if (testId) {
         router.push(`/quiz-setup/${testId}`);
       } else {
-        alert('Backend nie zwrócił ID testu.');
+        showToast('Backend nie zwrócił ID testu.');
         setIsGenerating(false);
       }
     } catch (err: any) {
@@ -223,7 +235,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const isActuallyReady = status === 'topics_extracted' && minTimeElapsed;
 
   const WavingText = ({ text }: { text: string }) => (
-    <div className="flex justify-center items-center text-3xl font-black text-yellow-400 mb-8 tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">
+    <div className="flex justify-center items-center text-xl sm:text-2xl md:text-3xl font-black text-yellow-400 mb-6 sm:mb-8 tracking-widest drop-shadow-[0_0_10px_rgba(250,204,21,0.5)]">
       {text.split('').map((char, i) => (
         <span
           key={i}
@@ -241,13 +253,29 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-12">
+      {/* Toast notifications */}
+      <div className="fixed top-24 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+        {toasts.map((toast) => (
+          <div
+            key={toast.id}
+            className={`pointer-events-auto animate-in slide-in-from-right-5 duration-300 max-w-sm p-4 rounded-2xl border shadow-2xl backdrop-blur-sm ${
+              toast.type === 'error'
+                ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                : 'bg-yellow-400/10 border-yellow-400/30 text-yellow-400'
+            }`}
+          >
+            <p className="text-sm font-bold leading-snug">{toast.message}</p>
+          </div>
+        ))}
+      </div>
+
       <style>{`@keyframes wave { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }`}</style>
 
       {/* --- EKRAN ŁADOWANIA --- */}
       {!isActuallyReady && status !== 'error' && (
-        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-zinc-900/50 border border-zinc-800 rounded-3xl p-16 shadow-2xl backdrop-blur-sm">
+        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-zinc-900/50 border border-zinc-800 rounded-2xl sm:rounded-3xl p-6 sm:p-16 shadow-2xl backdrop-blur-sm">
           <WavingText text="LAZY TEACHER analizuje..." />
-          <p className="text-zinc-400 text-lg font-medium animate-pulse tracking-wide uppercase">
+          <p className="text-sm sm:text-base md:text-lg font-medium animate-pulse tracking-wide uppercase text-zinc-400">
             Przygotowujemy grunt pod Twój sukces
           </p>
           <div className="w-64 h-1.5 bg-zinc-800 rounded-full mt-10 overflow-hidden relative shadow-[0_0_15px_rgba(0,0,0,0.5)]">
@@ -265,9 +293,11 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
             Analiza Gotowa
           </div>
 
-          <h1 className="text-6xl font-black text-white tracking-tighter uppercase italic">Gotowe do nauki</h1>
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-black text-white tracking-tighter uppercase italic">
+            Gotowe do nauki
+          </h1>
 
-          <p className="text-zinc-500 text-xl font-medium tracking-tight flex items-center justify-center gap-2">
+          <p className="text-zinc-500 text-base sm:text-xl font-medium tracking-tight flex flex-wrap items-center justify-center gap-2">
             Dokument:
             <button
               onClick={handleDownloadDocument}
@@ -299,9 +329,9 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4 w-full">
-            <div className="bg-zinc-900 border border-zinc-800 p-10 rounded-[2.5rem] flex flex-col items-center text-center shadow-2xl hover:border-yellow-400/40 transition-all group">
-              <div className="w-20 h-20 bg-yellow-400/10 rounded-3xl flex items-center justify-center mb-6 text-yellow-400 group-hover:scale-110 transition-transform shadow-inner">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-zinc-900 border border-zinc-800 p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] flex flex-col items-center text-center shadow-2xl hover:border-yellow-400/40 transition-all group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-yellow-400/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-4 sm:mb-6 text-yellow-400 group-hover:scale-110 transition-transform shadow-inner">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -310,7 +340,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Tematyka</h3>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Tematyka</h3>
               <p className="text-zinc-500 mb-8 text-sm leading-relaxed max-w-[200px]">
                 System wyodrębnił kluczowe tematy z Twoich notatek.
               </p>
@@ -322,9 +352,9 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
               </button>
             </div>
 
-            <div className="bg-zinc-900 border border-zinc-800 p-10 rounded-[2.5rem] flex flex-col items-center text-center shadow-2xl hover:border-yellow-400/40 transition-all group">
-              <div className="w-20 h-20 bg-yellow-400/10 rounded-3xl flex items-center justify-center mb-6 text-yellow-400 group-hover:scale-110 transition-transform shadow-inner">
-                <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-zinc-900 border border-zinc-800 p-6 sm:p-10 rounded-2xl sm:rounded-[2.5rem] flex flex-col items-center text-center shadow-2xl hover:border-yellow-400/40 transition-all group">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-yellow-400/10 rounded-2xl sm:rounded-3xl flex items-center justify-center mb-4 sm:mb-6 text-yellow-400 group-hover:scale-110 transition-transform shadow-inner">
+                <svg className="w-8 h-8 sm:w-10 sm:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -333,7 +363,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Testu</h3>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Testu</h3>
               <p className="text-zinc-500 mb-8 text-sm leading-relaxed max-w-[200px]">
                 Przejdź do generowania pytań i przygotowania quizu.
               </p>
@@ -351,7 +381,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
 
       {/* --- EKRAN BŁĘDU --- */}
       {(status === 'error' || errorMsg) && (
-        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-zinc-900 border border-zinc-800 rounded-[2.5rem] p-16 shadow-2xl text-center">
+        <div className="min-h-[60vh] flex flex-col items-center justify-center bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-[2.5rem] p-6 sm:p-16 shadow-2xl text-center">
           <div className="w-24 h-24 bg-red-500/10 rounded-full flex items-center justify-center mb-8">
             <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M6 18L18 6M6 6l12 12"></path>
@@ -371,7 +401,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       {/* --- MODAL DO ZARZĄDZANIA TEMATAMI --- */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-[2.5rem] w-full max-w-2xl p-8 shadow-2xl flex flex-col max-h-[85vh]">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl sm:rounded-[2.5rem] w-full max-w-2xl p-5 sm:p-8 shadow-2xl flex flex-col max-h-[85vh]">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-3xl font-black text-white uppercase italic">Zagadnienia</h2>
               <button

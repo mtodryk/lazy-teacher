@@ -215,10 +215,10 @@ export default function MyTestsPage() {
             return (
               <div
                 key={test.id}
-                className="bg-zinc-900 border border-zinc-800 rounded-[2rem] shadow-2xl overflow-hidden hover:border-yellow-400/20 transition-all"
+                className="bg-zinc-900 border border-zinc-800 rounded-xl sm:rounded-[2rem] shadow-2xl overflow-hidden hover:border-yellow-400/20 transition-all"
               >
                 {/* Test Header */}
-                <div className="p-8">
+                <div className="p-4 sm:p-8">
                   <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-2">
@@ -373,7 +373,7 @@ export default function MyTestsPage() {
 
                 {/* Submissions Panel */}
                 {isExpanded && (
-                  <div className="border-t border-zinc-800 bg-zinc-950/50 p-8 animate-in slide-in-from-top-2 duration-300">
+                    <div className="border-t border-zinc-800 bg-zinc-950/50 p-4 sm:p-8 animate-in slide-in-from-top-2 duration-300">
                     {isLoadingSubs ? (
                       <p className="text-yellow-400 font-bold animate-pulse text-center py-4 uppercase tracking-widest text-sm">
                         Ładowanie wyników...

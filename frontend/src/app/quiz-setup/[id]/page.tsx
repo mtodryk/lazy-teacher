@@ -457,18 +457,20 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
-          <div className="lg:col-span-2 space-y-12">
-            <h2 className="text-4xl font-black text-white uppercase italic tracking-tighter mb-4">Edycja Pytań</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10 items-start">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-12">
+            <h2 className="text-2xl sm:text-4xl font-black text-white uppercase italic tracking-tighter mb-4">
+              Edycja Pytań
+            </h2>
 
             {questions.map((q, qIdx) => (
               <div
                 key={q.id || qIdx}
-                className="bg-zinc-900 border border-zinc-800 p-10 rounded-[3rem] shadow-2xl hover:border-yellow-400/20 transition-all relative group/card"
+                className="bg-zinc-900 border border-zinc-800 p-5 sm:p-10 rounded-2xl sm:rounded-[3rem] shadow-2xl hover:border-yellow-400/20 transition-all relative group/card"
               >
                 <button
                   onClick={() => handleDeleteQuestion(qIdx)}
-                  className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-zinc-800 hover:bg-red-500/20 text-zinc-600 hover:text-red-400 flex items-center justify-center transition-all opacity-0 group-hover/card:opacity-100"
+                  className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 rounded-xl bg-zinc-800 hover:bg-red-500/20 text-zinc-600 hover:text-red-400 flex items-center justify-center transition-all sm:opacity-0 sm:group-hover/card:opacity-100"
                   title="Usuń pytanie"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -480,8 +482,8 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
                     ></path>
                   </svg>
                 </button>
-                <div className="flex items-start gap-6 mb-12">
-                  <div className="bg-yellow-400 text-black font-black w-14 h-14 flex-shrink-0 flex items-center justify-center rounded-[1.25rem] text-2xl shadow-lg">
+                <div className="flex items-start gap-3 sm:gap-6 mb-8 sm:mb-12">
+                  <div className="bg-yellow-400 text-black font-black w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0 flex items-center justify-center rounded-xl sm:rounded-[1.25rem] text-lg sm:text-2xl shadow-lg">
                     {qIdx + 1}
                   </div>
                   <div className="flex-grow pt-1">
@@ -492,7 +494,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
                       value={q.text}
                       onChange={(e) => updateQuestionText(qIdx, e.target.value)}
                       onInput={(e) => adjustHeight(e.target as HTMLTextAreaElement)}
-                      className="bg-transparent border-b-2 border-zinc-800 focus:border-yellow-400 outline-none text-white text-2xl font-black w-full py-2 transition-all resize-none overflow-hidden min-h-[60px]"
+                      className="bg-transparent border-b-2 border-zinc-800 focus:border-yellow-400 outline-none text-white text-lg sm:text-2xl font-black w-full py-2 transition-all resize-none overflow-hidden min-h-[60px]"
                       rows={1}
                     />
                   </div>
@@ -502,11 +504,11 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
                   {q.answers.map((ans, oIdx) => (
                     <div
                       key={ans.id || oIdx}
-                      className={`p-5 rounded-[1.5rem] border-2 transition-all flex items-start gap-5 pr-8 group/ans ${ans.is_correct ? 'border-green-500 bg-green-500/5' : 'border-zinc-800 bg-zinc-950/50 hover:border-zinc-700'}`}
+                      className={`p-3 sm:p-5 rounded-xl sm:rounded-[1.5rem] border-2 transition-all flex items-start gap-3 sm:gap-5 pr-4 sm:pr-8 group/ans ${ans.is_correct ? 'border-green-500 bg-green-500/5' : 'border-zinc-800 bg-zinc-950/50 hover:border-zinc-700'}`}
                     >
                       <button
                         onClick={() => setCorrectAnswer(qIdx, oIdx)}
-                        className={`w-12 h-12 flex-shrink-0 rounded-2xl flex items-center justify-center transition-all ${ans.is_correct ? 'bg-green-500 text-black shadow-lg' : 'bg-zinc-800 text-zinc-600 hover:text-zinc-400'}`}
+                        className={`w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 rounded-xl sm:rounded-2xl flex items-center justify-center transition-all ${ans.is_correct ? 'bg-green-500 text-black shadow-lg' : 'bg-zinc-800 text-zinc-600 hover:text-zinc-400'}`}
                       >
                         {ans.is_correct ? (
                           <span className="text-2xl font-bold">✓</span>
@@ -518,12 +520,12 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
                         value={ans.text}
                         onChange={(e) => updateOptionText(qIdx, oIdx, e.target.value)}
                         onInput={(e) => adjustHeight(e.target as HTMLTextAreaElement)}
-                        className={`bg-transparent outline-none w-full py-3 font-bold text-lg transition-all resize-none overflow-hidden min-h-[40px] leading-relaxed ${ans.is_correct ? 'text-green-400' : 'text-zinc-400 focus:text-white'}`}
+                        className={`bg-transparent outline-none w-full py-2 sm:py-3 font-bold text-base sm:text-lg transition-all resize-none overflow-hidden min-h-[40px] leading-relaxed ${ans.is_correct ? 'text-green-400' : 'text-zinc-400 focus:text-white'}`}
                         rows={1}
                       />
                       <button
                         onClick={() => handleDeleteAnswer(qIdx, oIdx)}
-                        className="w-8 h-8 flex-shrink-0 rounded-lg bg-transparent hover:bg-red-500/20 text-zinc-700 hover:text-red-400 flex items-center justify-center transition-all opacity-0 group-hover/ans:opacity-100 self-center"
+                        className="w-8 h-8 flex-shrink-0 rounded-lg bg-transparent hover:bg-red-500/20 text-zinc-700 hover:text-red-400 flex items-center justify-center transition-all sm:opacity-0 sm:group-hover/ans:opacity-100 self-center"
                         title="Usuń odpowiedź"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -542,7 +544,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
             ))}
           </div>
 
-          <div className="sticky top-12 mt-14 space-y-6 max-h-[calc(100vh-100px)] overflow-y-auto hide-scrollbar">
+          <div className="lg:sticky lg:top-12 mt-0 lg:mt-14 space-y-6 lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto hide-scrollbar">
             {/* Status panel */}
             {isActive !== null && (
               <div className="bg-zinc-900 border border-zinc-800 px-5 py-4 rounded-2xl flex items-center justify-between gap-4">
@@ -596,7 +598,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
             )}
 
             {/* Action panel */}
-            <div className="bg-zinc-900 border-2 border-yellow-400/30 p-6 sm:p-8 rounded-[2rem] shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
+            <div className="bg-zinc-900 border-2 border-yellow-400/30 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] shadow-2xl flex flex-col items-center text-center relative overflow-hidden">
               <div className="w-14 h-14 bg-yellow-400/10 rounded-2xl flex items-center justify-center mb-5 text-yellow-400 shadow-inner">
                 <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
