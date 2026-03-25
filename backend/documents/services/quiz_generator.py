@@ -3,14 +3,14 @@ import logging
 import random
 from typing import Optional
 
-from .chroma_retriever import ChromaRetriever
 from .llm_client import AzureLlmClient
 from .prompts import (
     QUIZ_GENERATION_SYSTEM,
     QUIZ_GENERATION_USER,
     NO_CONTEXT_WARNING,
 )
-from .types import QuestionData
+from .types import QuestionData, RetrievalContext
+from settings.utils import ApplicationError
 
 logger = logging.getLogger(__name__)
 
@@ -19,51 +19,32 @@ class QuizGenerationService:
     def __init__(
         self,
         llm_client: AzureLlmClient,
-        retriever: ChromaRetriever,
     ) -> None:
         self.llm_client = llm_client
-        self.retriever = retriever
 
-    def generate_question(
+    def generate_from_context(
         self,
         topic: str,
+        context: RetrievalContext,
         max_distance: float = 0.5,
-        chunks_per_question: int = 3,
-        doc_id: int | None = None,
     ) -> Optional[QuestionData]:
-
-        context = self.retriever.retrieve_for_topic(
-            topic=topic,
-            max_results=chunks_per_question,
-            max_distance=max_distance,
-            doc_id=doc_id,
+        response = self.llm_client.generate(
+            system_prompt=QUIZ_GENERATION_SYSTEM,
+            user_prompt=QUIZ_GENERATION_USER.format(
+                topic=topic,
+                context="\n\n".join(context.documents)
+                or "NO RELEVANT CONTEXT AVAILABLE",
+                no_context_note=(
+                    ""
+                    if context.has_good_context(max_distance)
+                    else NO_CONTEXT_WARNING.format(max_distance=max_distance)
+                ),
+            ),
+            temperature=0.2,
+            max_tokens=800,
         )
 
-        try:
-            response = self.llm_client.generate(
-                system_prompt=QUIZ_GENERATION_SYSTEM,
-                user_prompt=QUIZ_GENERATION_USER.format(
-                    topic=topic,
-                    context="\n\n".join(context.documents)
-                    or "BRAK ODPOWIEDNIEGO FRAGMENTU",
-                    no_context_note=(
-                        ""
-                        if context.has_good_context(max_distance)
-                        else NO_CONTEXT_WARNING.format(max_distance=max_distance)
-                    ),
-                ),
-                temperature=0.2,
-                max_tokens=800,
-            )
-        except Exception as e:
-            logger.error("LLM call failed for topic '%s': %s", topic, e)
-            return None
-
-        try:
-            data = self.llm_client.parse_json_response(response)
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.warning("Failed to parse quiz response for topic '%s': %s", topic, e)
-            return None
+        data = self.llm_client.parse_json_response(response)
 
         try:
             question = QuestionData(
@@ -76,11 +57,12 @@ class QuizGenerationService:
             )
         except (KeyError, IndexError, ValueError) as e:
             logger.warning("Invalid quiz data for topic '%s': %s", topic, e)
-            return None
+            raise ApplicationError(
+                f"Invalid question data structure for topic '{topic}'",
+                extra={"missing_field": str(e)[:100]},
+            )
 
-        # Step 5: Shuffle options
         self._shuffle_options(question)
-
         return question
 
     @staticmethod

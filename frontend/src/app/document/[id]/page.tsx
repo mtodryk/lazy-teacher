@@ -19,6 +19,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const [minTimeElapsed, setMinTimeElapsed] = useState(false);
   const [topicsRequested, setTopicsRequested] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [quizProgress, setQuizProgress] = useState(0);
 
   // Stany dla zagadnień i pobierania
   const [topics, setTopics] = useState<string[]>([]);
@@ -203,6 +204,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
 
   const handleGenerateQuiz = async () => {
     setIsGenerating(true);
+    setQuizProgress(0);
     try {
       const res = await fetch(`http://localhost:8000/api/documents/${id}/generate-quiz/`, {
         method: 'POST',
@@ -213,23 +215,68 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       });
 
       if (res.status === 404) notFound();
-      if (!res.ok) throw new Error('Nie udało się wygenerować quizu.');
+      if (!res.ok) throw new Error('Nie udało się zlecić generowania quizu.');
 
       const data = await res.json();
-      const testId = data.id || data.test_id;
+      const taskId = data.task_id;
 
-      if (testId) {
-        router.push(`/quiz-setup/${testId}`);
-      } else {
-        showToast('Backend nie zwrócił ID testu.');
+      if (!taskId) {
+        showToast('Backend nie zwrócił ID zadania.');
         setIsGenerating(false);
+        return;
       }
+
+      pollQuizTask(taskId);
     } catch (err: any) {
       if (err.digest === 'NEXT_NOT_FOUND') throw err;
       console.error(err);
-      setAsyncError(err);
+      showToast(err.message || 'Wystąpił błąd przy generowaniu quizu.', 'error');
       setIsGenerating(false);
     }
+  };
+
+  const pollQuizTask = (taskId: string) => {
+    let elapsed = 0;
+    const interval = setInterval(async () => {
+      elapsed += 2;
+      // Smooth fake progress: fast at start, slows down, never reaches 100
+      setQuizProgress(Math.min(95, Math.round(100 * (1 - Math.exp(-elapsed / 30)))));
+
+      try {
+        const res = await fetch(`http://localhost:8000/api/documents/test-task/${taskId}/`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Token ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!res.ok) return; // retry on next tick
+
+        const data = await res.json();
+
+        if (data.status === 'SUCCESS') {
+          clearInterval(interval);
+          setQuizProgress(100);
+          const testId = data.test_id;
+          if (testId) {
+            // Small delay to show 100% before redirecting
+            setTimeout(() => router.push(`/quiz-setup/${testId}`), 600);
+          } else {
+            showToast('Quiz wygenerowany, ale nie zwrócono ID testu.');
+            setIsGenerating(false);
+          }
+        } else if (data.status === 'FAILURE') {
+          clearInterval(interval);
+          showToast(data.error || 'Generowanie quizu nie powiodło się.', 'error');
+          setIsGenerating(false);
+        }
+        // PENDING / STARTED — keep polling
+      } catch (err) {
+        // Network error — keep polling, don't kill the interval
+        console.error('Poll error:', err);
+      }
+    }, 2000);
   };
 
   const isActuallyReady = status === 'topics_extracted' && minTimeElapsed;
@@ -364,16 +411,52 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                 </svg>
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Testu</h3>
-              <p className="text-zinc-500 mb-8 text-sm leading-relaxed max-w-[200px]">
-                Przejdź do generowania pytań i przygotowania quizu.
-              </p>
-              <button
-                onClick={handleGenerateQuiz}
-                disabled={isGenerating}
-                className="w-full py-5 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl transition-all active:scale-95 uppercase tracking-tighter shadow-xl border-b-4 border-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isGenerating ? 'Generuję...' : 'Generuj Quiz'}
-              </button>
+
+              {!isGenerating ? (
+                <>
+                  <p className="text-zinc-500 mb-8 text-sm leading-relaxed max-w-[200px]">
+                    Przejdź do generowania pytań i przygotowania quizu.
+                  </p>
+                  <button
+                    onClick={handleGenerateQuiz}
+                    className="w-full py-5 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl transition-all active:scale-95 uppercase tracking-tighter shadow-xl border-b-4 border-yellow-600"
+                  >
+                    Generuj Quiz
+                  </button>
+                </>
+              ) : (
+                <div className="w-full flex flex-col items-center gap-4 mt-2">
+                  {/* Spinning brain icon */}
+                  <div className="relative w-16 h-16">
+                    <div className="absolute inset-0 rounded-full border-4 border-yellow-400/20"></div>
+                    <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-yellow-400 animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <svg className="w-7 h-7 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                        ></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <p className="text-yellow-400 font-bold text-sm uppercase tracking-wider animate-pulse">
+                    Generuję pytania...
+                  </p>
+                  <p className="text-zinc-500 text-xs">AI analizuje Twoje notatki i tworzy quiz</p>
+
+                  {/* Progress bar */}
+                  <div className="w-full bg-zinc-800 rounded-full h-3 overflow-hidden mt-2 shadow-inner">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-400 to-yellow-300 rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(250,204,21,0.4)]"
+                      style={{ width: `${quizProgress}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-zinc-400 text-xs font-mono">{quizProgress}%</span>
+                </div>
+              )}
             </div>
           </div>
         </div>

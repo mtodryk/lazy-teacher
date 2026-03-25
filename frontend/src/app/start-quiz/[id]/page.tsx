@@ -296,7 +296,10 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
               const isCorrectlyAnswered = resultData?.is_correct;
 
               return (
-                <div className="bg-zinc-900 border border-zinc-800 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] shadow-xl">
+                <div
+                  key={q.id}
+                  className="bg-zinc-900 border border-zinc-800 p-5 sm:p-8 rounded-2xl sm:rounded-[2rem] shadow-xl"
+                >
                   <div className="flex items-start justify-between gap-4 mb-6">
                     <p className="text-white text-xl font-bold leading-relaxed tracking-tight">{q.text}</p>
                     <div
