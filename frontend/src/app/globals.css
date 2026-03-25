@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @theme {
   --color-primary: #facc15; /* yellow-400 */
@@ -8,4 +8,35 @@
 body {
   /* bg-black dla tła, text-zinc-100 dla czytelnego tekstu */
   @apply bg-black text-zinc-100;
+}
+
+/* Global scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #facc15;
+  border-radius: 5px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #eab308;
+  background-clip: content-box;
+}
+
+/* Hide scrollbar while keeping scroll functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
 }

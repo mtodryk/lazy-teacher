@@ -9,7 +9,7 @@ type DocStatus = 'pending' | 'processing' | 'ready' | 'error' | 'topics_extracte
 
 export default function DocumentLoadingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const router = useRouter();
 
   // Istniejące stany
@@ -34,6 +34,10 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   if (asyncError) throw asyncError;
 
   useEffect(() => {
+    if (!localStorage.getItem('token')) {
+      router.push('/login');
+      return;
+    }
     if (!token) return;
 
     const timer = setTimeout(() => setMinTimeElapsed(true), 3000);
@@ -48,8 +52,8 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
           }
         });
 
-        // Obsługa błędów przekierowująca na strony błędów
-        if (res.status === 404) notFound(); // Wyzwala not-found.tsx
+        if (res.status === 401) { logout(); return; }
+        if (res.status === 404) notFound();
         if (!res.ok) throw new Error(`Błąd serwera: ${res.status}`);
 
         const data = await res.json();
