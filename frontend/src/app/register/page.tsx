@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ export default function RegisterPage() {
     setErrorMsg('');
 
     try {
-      const res = await fetch('http://localhost:8000/api/users/register/', {
+      const res = await fetch(`${API_BASE_URL}/api/users/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),

@@ -1,8 +1,6 @@
 services:
   db:
     image: postgres:16-alpine
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     env_file:
@@ -12,11 +10,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -24,11 +21,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   chroma:
     image: chromadb/chroma:latest
-    ports:
-      - "8001:8000"
     volumes:
       - chroma_data:/data
     environment:
@@ -45,18 +41,18 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+    restart: unless-stopped
 
   backend:
     build:
       context: ./backend
       target: runtime
     image: myapp-backend:latest
-    command: python manage.py runserver 0.0.0.0:8000
-    restart: on-failure
-    ports:
-      - "8000:8000"
+    command: gunicorn settings.wsgi:application --bind 0.0.0.0:8000
+    restart: unless-stopped
     volumes:
-      - ./backend:/app
+      - django_static:/app/staticfiles
+      - temp_uploads:/app/temp_uploads
     env_file:
       - .env
     depends_on:
@@ -78,10 +74,10 @@ services:
     image: myapp-celery:latest
     entrypoint: []
     command: celery -A settings worker -l info --concurrency=1 --pool=prefork --max-tasks-per-child=50
-    restart: on-failure
+    restart: unless-stopped
     volumes:
-      - ./backend:/app
       - hf_cache:/home/django/.cache/huggingface
+      - temp_uploads:/app/temp_uploads
     env_file:
       - .env
     environment:
@@ -102,8 +98,39 @@ services:
           memory: 3G
     stop_grace_period: 30s
 
+  frontend:
+    build:
+      context: ./frontend
+    image: myapp-frontend:latest
+    restart: unless-stopped
+    volumes:
+      - nextjs_static:/app/.next/static:ro
+      - nextjs_public:/app/public:ro
+    env_file:
+      - .env
+    depends_on:
+      - backend
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - django_static:/var/www/static:ro
+      - nextjs_static:/var/www/nextjs-static:ro
+      - nextjs_public:/var/www/public:ro
+    depends_on:
+      - backend
+      - frontend
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
   chroma_data:
   hf_cache:
+  django_static:
+  nextjs_static:
+  nextjs_public:
+  temp_uploads:

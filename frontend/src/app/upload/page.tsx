@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function UploadPage() {
   const { token, logout } = useAuth();
@@ -54,7 +55,7 @@ export default function UploadPage() {
     console.log('Czysty token do wysyłki to:', cleanToken);
 
     try {
-      const response = await fetch('http://localhost:8000/api/documents/upload/', {
+      const response = await fetch(`${API_BASE_URL}/api/documents/upload/`, {
         method: 'POST',
         headers: { Authorization: `Token ${cleanToken}` },
         body: formData

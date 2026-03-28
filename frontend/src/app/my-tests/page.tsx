@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 interface Answer {
   id: number;
@@ -69,7 +70,7 @@ export default function MyTestsPage() {
 
     const fetchTests = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/tests/', {
+        const res = await fetch(`${API_BASE_URL}/api/tests/`, {
           headers: {
             Authorization: `Token ${token}`,
             'Content-Type': 'application/json'
@@ -89,7 +90,7 @@ export default function MyTestsPage() {
 
         for (const docId of uniqueDocIds) {
           try {
-            const docRes = await fetch(`http://localhost:8000/api/documents/${docId}/`, {
+            const docRes = await fetch(`${API_BASE_URL}/api/documents/${docId}/`, {
               headers: {
                 Authorization: `Token ${token}`,
                 'Content-Type': 'application/json'
@@ -127,7 +128,7 @@ export default function MyTestsPage() {
 
     setLoadingSubmissions(testId);
     try {
-      const res = await fetch(`http://localhost:8000/api/tests/${testId}/submissions/`, {
+      const res = await fetch(`${API_BASE_URL}/api/tests/${testId}/submissions/`, {
         headers: {
           Authorization: `Token ${token}`,
           'Content-Type': 'application/json'
@@ -157,7 +158,7 @@ export default function MyTestsPage() {
   const handleDownloadDocument = async (docId: number) => {
     setDownloadingDocId(docId);
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${docId}/download-url/`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${docId}/download-url/`, {
         method: 'GET',
         headers: {
           Authorization: `Token ${token}`,

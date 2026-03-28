@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -16,7 +17,7 @@ export default function LoginPage() {
     e.preventDefault();
     setLoginError('');
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/users/login/', {
+      const response = await fetch(`${API_BASE_URL}/api/users/login/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

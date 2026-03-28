@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, use } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 interface AnswerForShare {
   id: number;
@@ -87,7 +88,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/tests/by-code/${testCode}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/tests/by-code/${testCode}/`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -178,7 +179,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
           }))
       };
 
-      const res = await fetch(`http://localhost:8000/api/tests/${testId}/submit/`, {
+      const res = await fetch(`${API_BASE_URL}/api/tests/${testId}/submit/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

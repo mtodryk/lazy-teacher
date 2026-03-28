@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_BASE_URL } from '@/lib/api';
 
 interface AuthContextType {
   token: string | null;
@@ -38,7 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     if (token) {
       try {
-        await fetch('http://127.0.0.1:8000/api/users/logout/', {
+        await fetch(`${API_BASE_URL}/api/users/logout/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -4,6 +4,7 @@ import { useRouter, notFound } from 'next/navigation';
 import { useEffect, useState, useCallback, use } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
+import { API_BASE_URL } from '@/lib/api';
 
 type DocStatus = 'pending' | 'processing' | 'ready' | 'error' | 'topics_extracted';
 
@@ -54,7 +55,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
 
     const checkStatus = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/documents/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/documents/${id}/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,
@@ -93,7 +94,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
     const handleExtractTopics = async () => {
       setTopicsRequested(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/documents/${id}/topics/`, {
+        const response = await fetch(`${API_BASE_URL}/api/documents/${id}/topics/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,
@@ -123,7 +124,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const handleDownloadDocument = async () => {
     setIsDownloading(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${id}/download-url/`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}/download-url/`, {
         method: 'GET',
         headers: {
           Authorization: `Token ${token}`,
@@ -154,7 +155,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
     if (!newTopic.trim()) return;
     setIsManaging(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${id}/topics/manage/`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}/topics/manage/`, {
         method: 'POST',
         headers: {
           Authorization: `Token ${token}`,
@@ -180,7 +181,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const handleDeleteTopic = async (topicToDelete: string) => {
     setIsManaging(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${id}/topics/manage/`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}/topics/manage/`, {
         method: 'DELETE',
         headers: {
           Authorization: `Token ${token}`,
@@ -206,7 +207,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
     setIsGenerating(true);
     setQuizProgress(0);
     try {
-      const res = await fetch(`http://localhost:8000/api/documents/${id}/generate-quiz/`, {
+      const res = await fetch(`${API_BASE_URL}/api/documents/${id}/generate-quiz/`, {
         method: 'POST',
         headers: {
           Authorization: `Token ${token}`,
@@ -243,7 +244,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       setQuizProgress(Math.min(95, Math.round(100 * (1 - Math.exp(-elapsed / 30)))));
 
       try {
-        const res = await fetch(`http://localhost:8000/api/documents/test-task/${taskId}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/documents/test-task/${taskId}/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,
