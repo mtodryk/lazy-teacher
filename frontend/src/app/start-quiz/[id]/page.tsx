@@ -16,8 +16,8 @@ interface QuestionForShare {
   answers: AnswerForShare[];
 }
 
-interface TestData {
-  test_id: number;
+interface QuizData {
+  quiz_id: number;
   questions: QuestionForShare[];
 }
 
@@ -50,13 +50,13 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 export default function StartQuizPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id: testCode } = use(params);
+  const { id: quizCode } = use(params);
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isStarted, setIsStarted] = useState(false);
 
-  const [testId, setTestId] = useState<number | null>(null);
+  const [quizId, setQuizId] = useState<number | null>(null);
   const [questions, setQuestions] = useState<QuestionForShare[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [studentName, setStudentName] = useState('');
@@ -87,7 +87,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/api/tests/by-code/${testCode}/`, {
+        const res = await fetch(`http://localhost:8000/api/quizes/by-code/${quizCode}/`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -96,7 +96,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
         if (res.status === 404) notFound(); // Wyzwala not-found.tsx
         if (!res.ok) throw new Error(`Błąd ładowania quizu: ${res.status}`);
 
-        const data: TestData = await res.json();
+        const data: QuizData = await res.json();
 
         if (data.questions && data.questions.length > 0) {
           const shuffledQuestions = shuffleArray(data.questions);
@@ -105,7 +105,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
             answers: shuffleArray(q.answers)
           }));
 
-          setTestId(data.test_id);
+          setQuizId(data.quiz_id);
           setQuestions(fullyShuffled);
           setSelectedAnswers(fullyShuffled.map((q) => ({ questionId: q.id, answerId: null })));
         } else {
@@ -121,7 +121,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
       }
     };
     fetchQuiz();
-  }, [testCode]);
+  }, [quizCode]);
 
   const handleReset = () => {
     const reshuffledQuestions = shuffleArray(questions);
@@ -160,8 +160,8 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handleSubmitTest = async () => {
-    if (!testId || !studentName.trim()) {
+  const handleSubmitQuiz = async () => {
+    if (!quizId || !studentName.trim()) {
       showToast('Proszę podać swoje imię przed wysłaniem!', 'info');
       return;
     }
@@ -178,7 +178,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
           }))
       };
 
-      const res = await fetch(`http://localhost:8000/api/tests/${testId}/submit/`, {
+      const res = await fetch(`http://localhost:8000/api/quizes/${quizId}/submit/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -405,7 +405,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
               Wróć
             </button>
             <button
-              onClick={handleSubmitTest}
+              onClick={handleSubmitQuiz}
               className="py-4 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl border-b-4 border-yellow-600 uppercase tracking-widest text-[10px] transition-all"
               disabled={isSubmitting}
             >

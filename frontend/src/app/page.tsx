@@ -69,7 +69,7 @@ export default function HomePage() {
               />
             </svg>
           </div>
-          <h3 className="text-xl font-bold text-slate-100 mb-2">3. Rozwiąż test</h3>
+          <h3 className="text-xl font-bold text-slate-100 mb-2">3. Rozwiąż quiz</h3>
           <p className="text-slate-400 text-sm">
             Sprawdź się rozwiązując wygenerowany quiz i od razu zobacz, co już umiesz.
           </p>

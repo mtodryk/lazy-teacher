@@ -12,14 +12,14 @@ export default function Header() {
     <header className="fixed top-0 left-0 w-full z-50 bg-zinc-900 border-b border-zinc-800 text-zinc-100 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 sm:h-20">
-          {/* Po lewej: Moje Testy (desktop) */}
+          {/* Po lewej: Moje Quizy (desktop) */}
           <div className="hidden sm:flex flex-1">
             {token && (
               <Link
-                href="/my-tests"
+                href="/my-quizes"
                 className="bg-yellow-400 hover:bg-yellow-300 text-black px-5 py-2 rounded-lg text-sm font-black transition-all shadow-lg shadow-yellow-400/10 active:scale-95 uppercase tracking-wide"
               >
-                Moje Testy
+                Moje Quizy
               </Link>
             )}
           </div>
@@ -74,11 +74,11 @@ export default function Header() {
               Zalogowany jako: <span className="text-zinc-200">{username}</span>
             </div>
             <Link
-              href="/my-tests"
+              href="/my-quizes"
               onClick={() => setMenuOpen(false)}
               className="block bg-yellow-400 hover:bg-yellow-300 text-black px-5 py-3 rounded-lg text-sm font-black transition-all active:scale-95 uppercase tracking-wide text-center"
             >
-              Moje Testy
+              Moje Quizy
             </Link>
             <button
               onClick={() => { logout(); setMenuOpen(false); }}

@@ -7,8 +7,8 @@ import Header from '@/components/Header';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'LazyTeacher - Testy z Notatek',
-  description: 'Generuj testy ze swoich notatek PDF'
+  title: 'LazyTeacher - Quizy z Notatek',
+  description: 'Generuj quizy ze swoich notatek PDF'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

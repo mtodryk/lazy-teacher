@@ -7,7 +7,7 @@ from .apis import (
     GetRelevantChunks,
     ListDocuments,
     ManageTopic,
-    TestTaskStatus,
+    QuizTaskStatus,
     TopicExtractionDetail,
     UploadPDF,
 )
@@ -42,8 +42,8 @@ urlpatterns = [
         name="documents-generate-quiz",
     ),
     path(
-        "test-task/<str:task_id>/",
-        TestTaskStatus.as_view(),
+        "quiz-task/<str:task_id>/",
+        QuizTaskStatus.as_view(),
         name="documents-quiz-task-status",
     ),
 ]
