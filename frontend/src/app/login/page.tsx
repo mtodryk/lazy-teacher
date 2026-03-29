@@ -8,16 +8,32 @@ import Link from 'next/link';
 export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
   const { login } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
     try {
-      await login(username, password);
+      const response = await fetch('http://127.0.0.1:8000/api/users/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, password })
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const data = await response.json();
+      login(username, data.token);
       router.push('/');
     } catch (err) {
-      alert('Nieprawidłowe dane logowania');
+      console.error('Login error:', err);
+      setLoginError('Nieprawidłowe dane logowania');
     }
   };
 
@@ -26,7 +42,13 @@ export default function LoginPage() {
       <div className="bg-zinc-900 p-8 rounded-2xl border border-zinc-800 shadow-[0_0_30px_rgba(0,0,0,0.5)] w-full max-w-md">
         <h2 className="text-3xl font-bold text-yellow-400 mb-2 text-center">Witaj ponownie</h2>
         <p className="text-zinc-500 text-center mb-8 text-sm">Zaloguj się do swojego konta</p>
-        
+
+        {loginError && (
+          <div className="bg-red-950/50 border border-red-500/50 text-red-400 p-3 rounded-lg mb-6 text-sm text-center">
+            {loginError}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-zinc-400 mb-1">Nazwa użytkownika</label>

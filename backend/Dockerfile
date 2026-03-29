@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim AS base
 
 WORKDIR /app
 
@@ -15,4 +15,7 @@ RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
 
+FROM base AS backend
 ENTRYPOINT ["./entrypoint.sh"]
+
+FROM base AS celery

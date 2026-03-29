@@ -7,6 +7,7 @@ class Document(models.Model):
         PENDING = "pending", "Pending"
         PROCESSING = "processing", "Processing"
         READY = "ready", "Ready"
+        TOPICS_EXTRACTED = "topics_extracted", "Topics Extracted"
         ERROR = "error", "Error"
 
     user = models.ForeignKey(
@@ -16,6 +17,7 @@ class Document(models.Model):
     )
     title = models.CharField(max_length=255)
     file_name = models.CharField(max_length=255)
+    s3_key = models.CharField(max_length=512, blank=True, default="")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     chunk_count = models.PositiveIntegerField(default=0)
     status = models.CharField(

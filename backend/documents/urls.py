@@ -2,10 +2,12 @@ from django.urls import path
 
 from .apis import (
     DocumentApi,
-    ExtractTopics,
+    DocumentDownloadURL,
     GenerateQuiz,
     GetRelevantChunks,
     ListDocuments,
+    ManageTopic,
+    QuizTaskStatus,
     TopicExtractionDetail,
     UploadPDF,
 )
@@ -20,9 +22,9 @@ urlpatterns = [
         name="documents-document-detail",
     ),
     path(
-        "<int:doc_id>/extract-topics/",
-        ExtractTopics.as_view(),
-        name="documents-extract-topics",
+        "<int:doc_id>/download-url/",
+        DocumentDownloadURL.as_view(),
+        name="documents-download-url",
     ),
     path(
         "<int:doc_id>/topics/",
@@ -30,8 +32,18 @@ urlpatterns = [
         name="documents-topics-detail",
     ),
     path(
+        "<int:doc_id>/topics/manage/",
+        ManageTopic.as_view(),
+        name="documents-topic-manage",
+    ),
+    path(
         "<int:doc_id>/generate-quiz/",
         GenerateQuiz.as_view(),
         name="documents-generate-quiz",
+    ),
+    path(
+        "quiz-task/<str:task_id>/",
+        QuizTaskStatus.as_view(),
+        name="documents-quiz-task-status",
     ),
 ]

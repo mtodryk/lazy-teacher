@@ -38,28 +38,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async () => {
     if (token) {
       try {
-        await fetch('http://localhost:8000/api/users/logout/', {
+        await fetch('http://127.0.0.1:8000/api/users/logout/', {
           method: 'POST',
           headers: {
-            'Authorization': `Token ${token}`,
-          },
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`
+          }
         });
       } catch (error) {
-        console.error("Błąd podczas wylogowywania", error);
+        console.error('Błąd podczas wylogowywania', error);
       }
     }
     setToken(null);
     setUsername(null);
     localStorage.removeItem('token');
     localStorage.removeItem('username');
-    router.push('/login');
+    router.push('/');
   };
 
-  return (
-    <AuthContext.Provider value={{ token, username, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ token, username, login, logout }}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

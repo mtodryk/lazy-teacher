@@ -6,3 +6,8 @@ temp_uploads/
 chroma_db/
 TODO
 .env
+.idea/
+.coverage
+.coverage.*
+htmlcov/
+.vscode

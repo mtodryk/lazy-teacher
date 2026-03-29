@@ -7,6 +7,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-lazy_teacher}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -14,18 +19,37 @@ services:
       - "6379:6379"
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   chroma:
     image: chromadb/chroma:latest
     ports:
       - "8001:8000"
     volumes:
-      - chroma_data:/chroma/chroma
+      - chroma_data:/data
     environment:
       - ANONYMIZED_TELEMETRY=false
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh",
+          "-c",
+          "timeout 1 bash -c 'cat < /dev/null > /dev/tcp/localhost/8000' || exit 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      target: backend
     image: myapp-backend:latest
     command: python manage.py runserver 0.0.0.0:8000
     restart: on-failure
@@ -33,34 +57,50 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
-      - hf_cache:/root/.cache/huggingface
     env_file:
       - .env
     depends_on:
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       chroma:
-        condition: service_started
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   celery:
-    image: myapp-backend:latest
+    build:
+      context: ./backend
+      target: celery
+    image: myapp-celery:latest
     entrypoint: []
-    command: celery -A settings worker -l info --concurrency=1 --pool=prefork
+    command: celery -A settings worker -l info --concurrency=1 --pool=prefork --max-tasks-per-child=50
     restart: on-failure
     volumes:
       - ./backend:/app
       - hf_cache:/root/.cache/huggingface
     env_file:
       - .env
+    environment:
+      - MALLOC_TRIM_THRESHOLD_=65536
+      - MALLOC_MMAP_THRESHOLD_=65536
     depends_on:
+      backend:
+        condition: service_started
       db:
-        condition: service_started
+        condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
       chroma:
-        condition: service_started
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+    stop_grace_period: 30s
 
 volumes:
   postgres_data:
