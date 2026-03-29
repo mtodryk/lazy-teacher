@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from documents.models import Document, TopicExtractionResult
-from tests.models import Test, Question, Answer
+from quizes.models import Quiz, Question, Answer
 
 
 @pytest.mark.django_db
@@ -140,20 +140,20 @@ class TestTaskStatusApi:
             file_name="d.pdf",
             status=Document.Status.TOPICS_EXTRACTED,
         )
-        test = Test.objects.create(user=user, document=doc, code="quiz-1-abc")
-        q = Question.objects.create(test=test, text="Question?")
+        quiz = Quiz.objects.create(user=user, document=doc, code="quiz-1-abc")
+        q = Question.objects.create(quiz=quiz, text="Question?")
         Answer.objects.create(question=q, text="Answer", is_correct=True)
 
         mock_result = MagicMock()
         mock_result.state = "SUCCESS"
-        mock_result.result = {"test_id": test.id}
+        mock_result.result = {"quiz_id": quiz.id}
         mocker.patch("documents.apis.quiz.AsyncResult", return_value=mock_result)
 
         response = auth_client.get(task_url())
         assert response.status_code == status.HTTP_200_OK
         assert response.data["status"] == "SUCCESS"
-        assert response.data["test_id"] == test.id
-        assert "test" in response.data
+        assert response.data["quiz_id"] == quiz.id
+        assert "quiz" in response.data
 
     def test_task_success_error_result(self, auth_client, task_url, mocker):
         mock_result = MagicMock()
@@ -176,7 +176,7 @@ class TestTaskStatusApi:
     def test_task_success_test_not_found(self, auth_client, task_url, mocker):
         mock_result = MagicMock()
         mock_result.state = "SUCCESS"
-        mock_result.result = {"test_id": 9999}
+        mock_result.result = {"quiz_id": 9999}
         mocker.patch("documents.apis.quiz.AsyncResult", return_value=mock_result)
 
         response = auth_client.get(task_url())

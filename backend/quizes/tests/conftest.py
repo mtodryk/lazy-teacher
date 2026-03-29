@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
 
 from documents.models import Document
-from tests.models import Test, Question, Answer
+from quizes.models import Quiz, Question, Answer
 
 
 @pytest.fixture
@@ -57,23 +57,23 @@ def document(user):
 
 
 @pytest.fixture
-def test_obj(user, document):
+def quiz_obj(user, document):
     """Create a test with questions and answers."""
-    test = Test.objects.create(
+    quiz = Quiz.objects.create(
         user=user,
         document=document,
         code="quiz-1-testcode",
     )
-    q1 = Question.objects.create(test=test, text="Question 1?", topic="Topic A")
+    q1 = Question.objects.create(quiz=quiz, text="Question 1?", topic="Topic A")
     Answer.objects.create(question=q1, text="Correct answer", is_correct=True)
     Answer.objects.create(question=q1, text="Wrong answer 1", is_correct=False)
     Answer.objects.create(question=q1, text="Wrong answer 2", is_correct=False)
     Answer.objects.create(question=q1, text="Wrong answer 3", is_correct=False)
 
-    q2 = Question.objects.create(test=test, text="Question 2?", topic="Topic B")
+    q2 = Question.objects.create(quiz=quiz, text="Question 2?", topic="Topic B")
     Answer.objects.create(question=q2, text="Wrong", is_correct=False)
     Answer.objects.create(question=q2, text="Correct", is_correct=True)
     Answer.objects.create(question=q2, text="Wrong2", is_correct=False)
     Answer.objects.create(question=q2, text="Wrong3", is_correct=False)
 
-    return test
+    return quiz

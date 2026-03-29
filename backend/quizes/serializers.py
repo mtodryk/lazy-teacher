@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Answer, Question, Test, TestSubmission, SubmittedAnswer
+from .models import Answer, Question, Quiz, QuizSubmission, SubmittedAnswer
 
 
 class AnswerResponseSerializer(serializers.ModelSerializer):
@@ -22,20 +22,20 @@ class QuestionResponseSerializer(serializers.ModelSerializer):
         fields = ["id", "text", "topic", "answers", "created_at"]
 
 
-class TestCreateSerializer(serializers.Serializer):
+class QuizCreateSerializer(serializers.Serializer):
     code = serializers.CharField(min_length=1, max_length=100)
     document_id = serializers.IntegerField()
 
-# change test status (active/inactive)
-class TestUpdateSerializer(serializers.Serializer):
+# change quiz status (active/inactive)
+class QuizUpdateSerializer(serializers.Serializer):
     is_active = serializers.BooleanField()
 
-class TestResponseSerializer(serializers.ModelSerializer):
+class QuizResponseSerializer(serializers.ModelSerializer):
     questions = QuestionResponseSerializer(many=True, read_only=True)
     document_id = serializers.IntegerField(source="document.id")
 
     class Meta:
-        model = Test
+        model = Quiz
         fields = ["id", "code", "document_id", "is_active", "questions", "created_at"]
 
 
@@ -87,12 +87,12 @@ class AddQuestionsSerializer(serializers.Serializer):
 
 
 # ── Share link serializers ───────────────────────────────────────────
-class RetrieveTestByCodeRequestSerializer(serializers.Serializer):
+class RetrieveQuizByCodeRequestSerializer(serializers.Serializer):
     code = serializers.CharField(
         min_length=1,
         max_length=100,
         required=True,
-        help_text="Share code of the test",
+        help_text="Share code of the quiz",
     )
 
 
@@ -106,23 +106,23 @@ class AnswerForShareSerializer(serializers.Serializer):
     text = serializers.CharField()
 
 
-class TestQuestionForShareSerializer(serializers.Serializer):
+class QuizQuestionForShareSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     text = serializers.CharField()
     topic = serializers.CharField()
     answers = AnswerForShareSerializer(many=True)
 
 
-class RetrieveTestByCodeResponseSerializer(serializers.Serializer):
-    test_id = serializers.IntegerField()
-    questions = TestQuestionForShareSerializer(many=True)
+class RetrieveQuizByCodeResponseSerializer(serializers.Serializer):
+    quiz_id = serializers.IntegerField()
+    questions = QuizQuestionForShareSerializer(many=True)
 
 # For incoming submission data
 class SubmitAnswerSerializer(serializers.Serializer):
     question = serializers.IntegerField()
     answer_id = serializers.IntegerField()
 
-class TestSubmissionSerializer(serializers.Serializer):
+class QuizSubmissionSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     answers = SubmitAnswerSerializer(many=True)
 
@@ -133,14 +133,14 @@ class SubmissionAnswerResponseSerializer(serializers.Serializer):
     selected_answer_id = serializers.IntegerField()
     is_correct = serializers.BooleanField()
 
-class TestSubmissionResponseSerializer(serializers.Serializer):
+class QuizSubmissionResponseSerializer(serializers.Serializer):
     score = serializers.IntegerField()
     max_score = serializers.IntegerField()
     percentage = serializers.FloatField()
     passed = serializers.BooleanField()
     answers = SubmissionAnswerResponseSerializer(many=True)
 
-# For checking submissions by test author
+# For checking submissions by quiz author
 class SubmittedAnswerDetailSerializer(serializers.ModelSerializer):
     question_text = serializers.CharField(source="question.text", read_only=True)
     selected_answer_text = serializers.CharField(source="selected_answer.text", read_only=True, allow_null=True)
@@ -155,9 +155,9 @@ class SubmittedAnswerDetailSerializer(serializers.ModelSerializer):
         correct = obj.question.answers.filter(is_correct=True).first()
         return correct.id if correct else None
 
-class TestSubmissionDetailSerializer(serializers.ModelSerializer):
+class QuizSubmissionDetailSerializer(serializers.ModelSerializer):
     answers = SubmittedAnswerDetailSerializer(source="submitted_answers", many=True, read_only=True)
 
     class Meta:
-        model = TestSubmission
+        model = QuizSubmission
         fields = ["id", "student_name", "score", "max_score", "percentage", "passed", "submitted_at", "answers"]

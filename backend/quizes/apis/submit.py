@@ -10,33 +10,33 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from ..models import Test, Question, Answer, TestSubmission, SubmittedAnswer
+from ..models import Quiz, Question, Answer, QuizSubmission, SubmittedAnswer
 from ..serializers import (
-    TestSubmissionSerializer,
-    TestSubmissionResponseSerializer,
-    TestSubmissionDetailSerializer,
+    QuizSubmissionSerializer,
+    QuizSubmissionResponseSerializer,
+    QuizSubmissionDetailSerializer,
 )
 
 
-class SubmitTest(APIView):
+class SubmitQuiz(APIView):
     permission_classes = [AllowAny]  # Anyone can submit
-    serializer_class = TestSubmissionSerializer
+    serializer_class = QuizSubmissionSerializer
 
-    def _get_test(self, test_id: int):
+    def _get_test(self, quiz_id: int):
         try:
-            return Test.objects.prefetch_related("questions__answers").get(
-                id=test_id, is_active=True
+            return Quiz.objects.prefetch_related("questions__answers").get(
+                id=quiz_id, is_active=True
             )
-        except Test.DoesNotExist:
-            raise NotFound("Test not found or inactive.")
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found or inactive.")
 
     @extend_schema(
-        request=TestSubmissionSerializer,
-        responses={200: TestSubmissionResponseSerializer},
+        request=QuizSubmissionSerializer,
+        responses={200: QuizSubmissionResponseSerializer},
     )
-    def post(self, request: Request, test_id: int) -> Response:
-        test = self._get_test(test_id)
-        serializer = TestSubmissionSerializer(data=request.data)
+    def post(self, request: Request, quiz_id: int) -> Response:
+        quiz = self._get_test(quiz_id)
+        serializer = QuizSubmissionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         name = serializer.validated_data["name"]
@@ -45,11 +45,11 @@ class SubmitTest(APIView):
         # Build a dict of question_id -> selected_answer_id
         submitted_answers = {ans["question"]: ans["answer_id"] for ans in answers_data}
 
-        # Validate questions exist and belong to the test
+        # Validate questions exist and belong to the quiz
         question_ids = set(submitted_answers.keys())
-        questions = {q.id: q for q in test.questions.all()}
+        questions = {q.id: q for q in quiz.questions.all()}
         if question_ids != set(questions.keys()):
-            raise ValidationError("Submitted questions do not match the test.")
+            raise ValidationError("Submitted questions do not match the quiz.")
 
         # Calculate results
         score = 0
@@ -86,8 +86,8 @@ class SubmitTest(APIView):
         passed = percentage >= 50  # More than half to pass, adjust if needed
 
         # Save to database
-        submission = TestSubmission.objects.create(
-            test=test,
+        submission = QuizSubmission.objects.create(
+            quiz=quiz,
             student_name=name,
             score=score,
             max_score=max_score,
@@ -102,7 +102,7 @@ class SubmitTest(APIView):
                 is_correct=ans_data["is_correct"],
             )
 
-        response_serializer = TestSubmissionResponseSerializer(
+        response_serializer = QuizSubmissionResponseSerializer(
             {
                 "score": score,
                 "max_score": max_score,
@@ -114,23 +114,23 @@ class SubmitTest(APIView):
         return Response(response_serializer.data, status=status.HTTP_200_OK)
 
 
-class TestSubmissionsView(APIView):
+class QuizSubmissionsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def _get_test(self, test_id: int, user: User):
+    def _get_test(self, quiz_id: int, user: User):
         try:
-            return Test.objects.get(id=test_id, user=user)  # Filtr po właścicielu!
-        except Test.DoesNotExist:
-            raise NotFound("Test not found or you don't have permission.")
+            return Quiz.objects.get(id=quiz_id, user=user)  # Filtr po właścicielu!
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found or you don't have permission.")
 
     @extend_schema(
-        responses={200: TestSubmissionDetailSerializer(many=True)},
+        responses={200: QuizSubmissionDetailSerializer(many=True)},
     )
-    def get(self, request: Request, test_id: int) -> Response:
-        test = self._get_test(test_id, request.user)
-        submissions = TestSubmission.objects.filter(test=test).prefetch_related(
+    def get(self, request: Request, quiz_id: int) -> Response:
+        quiz = self._get_test(quiz_id, request.user)
+        submissions = QuizSubmission.objects.filter(quiz=quiz).prefetch_related(
             "submitted_answers__question__answers",  # Dla correct_answer_id
             "submitted_answers__selected_answer",
         )
-        serializer = TestSubmissionDetailSerializer(submissions, many=True)
+        serializer = QuizSubmissionDetailSerializer(submissions, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

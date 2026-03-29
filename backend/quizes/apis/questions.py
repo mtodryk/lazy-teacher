@@ -7,29 +7,29 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from settings.utils import ApplicationError
-from ..models import Answer, Question, Test
+from ..models import Answer, Question, Quiz
 from ..serializers import (
     AddQuestionsSerializer,
     BulkUpdateQuestionsSerializer,
     QuestionResponseSerializer,
-    TestResponseSerializer,
+    QuizResponseSerializer,
 )
 
 
-class TestQuestions(APIView):
+class QuizQuestions(APIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = AddQuestionsSerializer
 
-    def _get_test(self, test_id: int, user):
+    def _get_test(self, quiz_id: int, user):
         try:
-            return Test.objects.get(id=test_id, user=user)
-        except Test.DoesNotExist:
-            raise NotFound("Test not found.")
+            return Quiz.objects.get(id=quiz_id, user=user)
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found.")
 
-    def post(self, request: Request, test_id: int) -> Response:
+    def post(self, request: Request, quiz_id: int) -> Response:
         """
-        Add new questions (with answers) to a test.
+        Add new questions (with answers) to a quiz.
 
         Expected request body:
         {
@@ -47,7 +47,7 @@ class TestQuestions(APIView):
 
         All questions provided in the request will be created as new questions.
         """
-        test = self._get_test(test_id, request.user)
+        quiz = self._get_test(quiz_id, request.user)
 
         serializer = AddQuestionsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -56,7 +56,7 @@ class TestQuestions(APIView):
         with transaction.atomic():
             for q_data in serializer.validated_data["questions"]:
                 question = Question.objects.create(
-                    test=test,
+                    quiz=quiz,
                     text=q_data["text"],
                     topic=q_data.get("topic", ""),
                 )
@@ -82,9 +82,9 @@ class TestQuestions(APIView):
             status=status.HTTP_201_CREATED,
         )
 
-    def patch(self, request: Request, test_id: int) -> Response:
+    def patch(self, request: Request, quiz_id: int) -> Response:
         """
-        Bulk-update existing questions/answers in a test.
+        Bulk-update existing questions/answers in a quiz.
 
         Only updates the questions included in the request. Questions not in the
         array remain completely unchanged.
@@ -109,23 +109,23 @@ class TestQuestions(APIView):
         - Questions with IDs NOT in the request are left completely unchanged
         - For each question being updated, ALL answer IDs and data must be provided
         - At least one answer must be marked as correct
-        - All answer IDs and question IDs must exist in the test
+        - All answer IDs and question IDs must exist in the quiz
         """
 
-        test = self._get_test(test_id, request.user)
+        quiz = self._get_test(quiz_id, request.user)
 
         serializer = BulkUpdateQuestionsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         question_ids = [q["id"] for q in serializer.validated_data["questions"]]
         existing_questions = {
-            q.id: q for q in Question.objects.filter(id__in=question_ids, test=test)
+            q.id: q for q in Question.objects.filter(id__in=question_ids, quiz=quiz)
         }
 
         missing = set(question_ids) - set(existing_questions.keys())
         if missing:
             raise ApplicationError(
-                message="Some questions were not found in this test.",
+                message="Some questions were not found in this quiz.",
                 extra={"missing_ids": sorted(missing)},
             )
 
@@ -192,26 +192,26 @@ class TestQuestions(APIView):
                         answer.save(update_fields=["text", "is_correct"])
 
         # Refetch for response
-        test = self._get_test(test_id, request.user)
-        test = Test.objects.prefetch_related("questions__answers").get(id=test.id)
-        return Response(TestResponseSerializer(test).data)
+        quiz = self._get_test(quiz_id, request.user)
+        quiz = Quiz.objects.prefetch_related("questions__answers").get(id=quiz.id)
+        return Response(QuizResponseSerializer(quiz).data)
 
 
 class QuestionDetail(APIView):
-    """DELETE a single question from a test."""
+    """DELETE a single question from a quiz."""
 
     permission_classes = [IsAuthenticated]
     serializer_class = QuestionResponseSerializer
 
-    def delete(self, request: Request, test_id: int, question_id: int) -> Response:
+    def delete(self, request: Request, quiz_id: int, question_id: int) -> Response:
         try:
-            question = Question.objects.select_related("test").get(
+            question = Question.objects.select_related("quiz").get(
                 id=question_id,
-                test_id=test_id,
-                test__user=request.user,
+                quiz_id=quiz_id,
+                quiz__user=request.user,
             )
         except Question.DoesNotExist:
-            raise NotFound("Question not found in this test.")
+            raise NotFound("Question not found in this quiz.")
 
         question.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

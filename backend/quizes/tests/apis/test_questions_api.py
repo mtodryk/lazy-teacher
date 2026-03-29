@@ -1,11 +1,11 @@
 """
 Тесты для backend/tests/apis/questions.py
 
-Расположение: backend/tests/tests/apis/test_questions_api.py
+Расположение: backend/tests/tests/apis/quiz_questions_api.py
 
 Обоснование: questions.py содержит API views TestQuestions и QuestionDetail,
 принадлежащие Django-приложению 'tests'. По нашей конвенции тесты API
-размещаются в tests/<app>/apis/. Имя файла test_questions_api.py отражает
+размещаются в tests/<app>/apis/. Имя файла quiz_questions_api.py отражает
 тестируемый модуль.
 """
 
@@ -14,7 +14,7 @@ from django.urls import reverse
 from rest_framework import status
 
 from documents.models import Document
-from tests.models import Test, Question, Answer
+from quizes.models import Quiz, Question, Answer
 
 
 @pytest.mark.django_db
@@ -22,10 +22,10 @@ class TestQuestionsAddApi:
     """Tests for TestQuestions.post — adding questions to a test."""
 
     @pytest.fixture
-    def questions_url(self, test_obj):
-        return reverse("test_questions", kwargs={"test_id": test_obj.id})
+    def questions_url(self, quiz_obj):
+        return reverse("quiz_questions", kwargs={"quiz_id": quiz_obj.id})
 
-    def test_add_single_question(self, auth_client, questions_url, test_obj):
+    def test_add_single_question(self, auth_client, questions_url, quiz_obj):
         data = {
             "questions": [
                 {
@@ -46,7 +46,7 @@ class TestQuestionsAddApi:
         assert response.data[0]["text"] == "New question?"
         assert len(response.data[0]["answers"]) == 4
 
-    def test_add_multiple_questions(self, auth_client, questions_url, test_obj):
+    def test_add_multiple_questions(self, auth_client, questions_url, quiz_obj):
         data = {
             "questions": [
                 {
@@ -69,8 +69,8 @@ class TestQuestionsAddApi:
         assert response.status_code == status.HTTP_201_CREATED
         assert len(response.data) == 2
 
-    def test_add_question_increments_count(self, auth_client, questions_url, test_obj):
-        initial_count = test_obj.questions.count()
+    def test_add_question_increments_count(self, auth_client, questions_url, quiz_obj):
+        initial_count = quiz_obj.questions.count()
         data = {
             "questions": [
                 {
@@ -83,7 +83,7 @@ class TestQuestionsAddApi:
             ]
         }
         auth_client.post(questions_url, data, format="json")
-        assert test_obj.questions.count() == initial_count + 1
+        assert quiz_obj.questions.count() == initial_count + 1
 
     def test_add_question_no_correct_answer(self, auth_client, questions_url):
         data = {
@@ -120,7 +120,7 @@ class TestQuestionsAddApi:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_add_question_test_not_found(self, auth_client):
-        url = reverse("test_questions", kwargs={"test_id": 9999})
+        url = reverse("quiz_questions", kwargs={"quiz_id": 9999})
         data = {
             "questions": [
                 {
@@ -136,10 +136,10 @@ class TestQuestionsAddApi:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_add_question_other_users_test(self, auth_client, other_user, document):
-        other_test = Test.objects.create(
+        other_quiz = Quiz.objects.create(
             user=other_user, document=document, code="other-code"
         )
-        url = reverse("test_questions", kwargs={"test_id": other_test.id})
+        url = reverse("quiz_questions", kwargs={"quiz_id": other_quiz.id})
         data = {
             "questions": [
                 {
@@ -154,8 +154,8 @@ class TestQuestionsAddApi:
         response = auth_client.post(url, data, format="json")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_add_question_unauthenticated(self, api_client, test_obj):
-        url = reverse("test_questions", kwargs={"test_id": test_obj.id})
+    def test_add_question_unauthenticated(self, api_client, quiz_obj):
+        url = reverse("quiz_questions", kwargs={"quiz_id": quiz_obj.id})
         response = api_client.post(url, {}, format="json")
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
 
@@ -181,11 +181,11 @@ class TestQuestionsBulkUpdateApi:
     """Tests for TestQuestions.patch — bulk updating questions."""
 
     @pytest.fixture
-    def questions_url(self, test_obj):
-        return reverse("test_questions", kwargs={"test_id": test_obj.id})
+    def questions_url(self, quiz_obj):
+        return reverse("quiz_questions", kwargs={"quiz_id": quiz_obj.id})
 
-    def test_update_question_text(self, auth_client, questions_url, test_obj):
-        question = test_obj.questions.first()
+    def test_update_question_text(self, auth_client, questions_url, quiz_obj):
+        question = quiz_obj.questions.first()
         answers = list(question.answers.all())
         data = {
             "questions": [
@@ -209,8 +209,8 @@ class TestQuestionsBulkUpdateApi:
         question.refresh_from_db()
         assert question.text == "Updated question text?"
 
-    def test_update_answer_text(self, auth_client, questions_url, test_obj):
-        question = test_obj.questions.first()
+    def test_update_answer_text(self, auth_client, questions_url, quiz_obj):
+        question = quiz_obj.questions.first()
         answers = list(question.answers.all())
         data = {
             "questions": [
@@ -252,8 +252,8 @@ class TestQuestionsBulkUpdateApi:
         response = auth_client.patch(questions_url, data, format="json")
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    def test_update_requires_all_answers(self, auth_client, questions_url, test_obj):
-        question = test_obj.questions.first()
+    def test_update_requires_all_answers(self, auth_client, questions_url, quiz_obj):
+        question = quiz_obj.questions.first()
         first_answer = question.answers.first()
         # Only provide one answer instead of all
         data = {
@@ -275,9 +275,9 @@ class TestQuestionsBulkUpdateApi:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_update_no_correct_answer_rejected(
-        self, auth_client, questions_url, test_obj
+        self, auth_client, questions_url, quiz_obj
     ):
-        question = test_obj.questions.first()
+        question = quiz_obj.questions.first()
         answers = list(question.answers.all())
         data = {
             "questions": [
@@ -299,24 +299,24 @@ class TestQuestionsBulkUpdateApi:
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
     def test_update_test_not_found(self, auth_client):
-        url = reverse("test_questions", kwargs={"test_id": 9999})
+        url = reverse("quiz_questions", kwargs={"quiz_id": 9999})
         data = {"questions": [{"id": 1, "text": "Q?"}]}
         response = auth_client.patch(url, data, format="json")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_update_other_users_test(self, auth_client, other_user, document):
-        other_test = Test.objects.create(
+        other_quiz = Quiz.objects.create(
             user=other_user, document=document, code="other-test"
         )
-        url = reverse("test_questions", kwargs={"test_id": other_test.id})
+        url = reverse("quiz_questions", kwargs={"quiz_id": other_quiz.id})
         data = {"questions": [{"id": 1, "text": "Q?"}]}
         response = auth_client.patch(url, data, format="json")
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_update_preserves_unchanged_questions(
-        self, auth_client, questions_url, test_obj
+        self, auth_client, questions_url, quiz_obj
     ):
-        questions = list(test_obj.questions.all())
+        questions = list(quiz_obj.questions.all())
         q1 = questions[0]
         q2 = questions[1]
         q2_original_text = q2.text
@@ -349,64 +349,64 @@ class TestQuestionsBulkUpdateApi:
 class TestQuestionDetailDeleteApi:
     """Tests for QuestionDetail.delete."""
 
-    def test_delete_question(self, auth_client, test_obj):
-        question = test_obj.questions.first()
+    def test_delete_question(self, auth_client, quiz_obj):
+        question = quiz_obj.questions.first()
         url = reverse(
             "question_detail",
-            kwargs={"test_id": test_obj.id, "question_id": question.id},
+            kwargs={"quiz_id": quiz_obj.id, "question_id": question.id},
         )
         response = auth_client.delete(url)
         assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not Question.objects.filter(id=question.id).exists()
 
-    def test_delete_question_cascades_answers(self, auth_client, test_obj):
-        question = test_obj.questions.first()
+    def test_delete_question_cascades_answers(self, auth_client, quiz_obj):
+        question = quiz_obj.questions.first()
         answer_ids = list(question.answers.values_list("id", flat=True))
         url = reverse(
             "question_detail",
-            kwargs={"test_id": test_obj.id, "question_id": question.id},
+            kwargs={"quiz_id": quiz_obj.id, "question_id": question.id},
         )
         auth_client.delete(url)
         assert Answer.objects.filter(id__in=answer_ids).count() == 0
 
-    def test_delete_question_not_found(self, auth_client, test_obj):
+    def test_delete_question_not_found(self, auth_client, quiz_obj):
         url = reverse(
             "question_detail",
-            kwargs={"test_id": test_obj.id, "question_id": 9999},
+            kwargs={"quiz_id": quiz_obj.id, "question_id": 9999},
         )
         response = auth_client.delete(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_delete_question_wrong_test(self, auth_client, user, document, test_obj):
-        other_test = Test.objects.create(
+    def test_delete_question_wrong_test(self, auth_client, user, document, quiz_obj):
+        other_quiz = Quiz.objects.create(
             user=user, document=document, code="other-test2"
         )
-        question = test_obj.questions.first()
+        question = quiz_obj.questions.first()
         url = reverse(
             "question_detail",
-            kwargs={"test_id": other_test.id, "question_id": question.id},
+            kwargs={"quiz_id": other_quiz.id, "question_id": question.id},
         )
         response = auth_client.delete(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_delete_question_other_users_test(self, auth_client, other_user, document):
-        other_test = Test.objects.create(
+        other_quiz = Quiz.objects.create(
             user=other_user, document=document, code="foreign-test"
         )
-        q = Question.objects.create(test=other_test, text="Q?")
+        q = Question.objects.create(quiz=other_quiz, text="Q?")
         url = reverse(
             "question_detail",
-            kwargs={"test_id": other_test.id, "question_id": q.id},
+            kwargs={"quiz_id": other_quiz.id, "question_id": q.id},
         )
         response = auth_client.delete(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
         assert Question.objects.filter(id=q.id).exists()
 
-    def test_delete_question_unauthenticated(self, api_client, test_obj):
-        question = test_obj.questions.first()
+    def test_delete_question_unauthenticated(self, api_client, quiz_obj):
+        question = quiz_obj.questions.first()
         url = reverse(
             "question_detail",
-            kwargs={"test_id": test_obj.id, "question_id": question.id},
+            kwargs={"quiz_id": quiz_obj.id, "question_id": question.id},
         )
         response = api_client.delete(url)
         assert response.status_code == status.HTTP_401_UNAUTHORIZED

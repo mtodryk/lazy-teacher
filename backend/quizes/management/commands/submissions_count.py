@@ -1,9 +1,9 @@
 from django.core.management.base import BaseCommand
-from tests.models import TestSubmission
+from quizes.models import QuizSubmission
 
 class Command(BaseCommand):
-    help = "Shows the total number of test submissions"
+    help = "Shows the total number of quiz submissions"
 
     def handle(self, *args, **options):
-        count = TestSubmission.objects.count()
+        count = QuizSubmission.objects.count()
         self.stdout.write(self.style.SUCCESS(f"Total submissions: {count}"))

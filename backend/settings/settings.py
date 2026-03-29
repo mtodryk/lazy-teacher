@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "documents",
     "users",
-    "tests",
+    "quizes",
     "corsheaders",
     "drf_spectacular",
 ]

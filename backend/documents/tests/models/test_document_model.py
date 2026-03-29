@@ -22,11 +22,11 @@ class TestDocumentModel:
     def test_str_representation(self, user):
         doc = Document.objects.create(
             user=user,
-            title="Test Doc",
+            title="Quiz Doc",
             file_name="test.pdf",
             status=Document.Status.READY,
         )
-        assert str(doc) == "Test Doc (ready)"
+        assert str(doc) == "Quiz Doc (ready)"
 
     def test_status_choices(self):
         assert Document.Status.PENDING == "pending"

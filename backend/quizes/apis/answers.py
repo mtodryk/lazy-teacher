@@ -17,13 +17,13 @@ class AnswerDetail(APIView):
     serializer_class = QuestionResponseSerializer
 
     def delete(
-        self, request: Request, test_id: int, question_id: int, answer_id: int
+        self, request: Request, quiz_id: int, question_id: int, answer_id: int
     ) -> Response:
         try:
             answer = Answer.objects.select_related("question__test").get(
                 id=answer_id,
                 question_id=question_id,
-                question__test_id=test_id,
+                question__quiz_id=quiz_id,
                 question__test__user=request.user,
             )
         except Answer.DoesNotExist:

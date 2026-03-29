@@ -243,7 +243,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       setQuizProgress(Math.min(95, Math.round(100 * (1 - Math.exp(-elapsed / 30)))));
 
       try {
-        const res = await fetch(`http://localhost:8000/api/documents/test-task/${taskId}/`, {
+        const res = await fetch(`http://localhost:8000/api/documents/quiz-task/${taskId}/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,
@@ -258,12 +258,12 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
         if (data.status === 'SUCCESS') {
           clearInterval(interval);
           setQuizProgress(100);
-          const testId = data.test_id;
-          if (testId) {
+          const quizId = data.quiz_id;
+          if (quizId) {
             // Small delay to show 100% before redirecting
-            setTimeout(() => router.push(`/quiz-setup/${testId}`), 600);
+            setTimeout(() => router.push(`/quiz-setup/${quizId}`), 600);
           } else {
-            showToast('Quiz wygenerowany, ale nie zwrócono ID testu.');
+            showToast('Quiz wygenerowany, ale nie zwrócono ID quizu.');
             setIsGenerating(false);
           }
         } else if (data.status === 'FAILURE') {
@@ -410,7 +410,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Testu</h3>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Quizu</h3>
 
               {!isGenerating ? (
                 <>

@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 from django.contrib.auth.models import User
 from documents.models import Document, TopicExtractionResult
-from tests.models import Test
+from quizes.models import Quiz
 from documents.tasks import (
     process_pdf_upload,
     delete_document_vectors_task,
@@ -96,7 +96,7 @@ class TestProcessPdfUploadTask:
         user,
         pending_document,
     ):
-        mock_extract_chunk.side_effect = Exception("Test Error")
+        mock_extract_chunk.side_effect = Exception("Quiz Error")
 
         # We need to mock the retry behavior or handle the raised exception
         with patch("celery.app.task.Task.retry") as mock_retry:
@@ -112,7 +112,7 @@ class TestProcessPdfUploadTask:
 
             pending_document.refresh_from_db()
             assert pending_document.status == Document.Status.ERROR
-            assert "Test Error" in pending_document.error_message
+            assert "Quiz Error" in pending_document.error_message
 
 
 @pytest.mark.django_db
@@ -228,11 +228,11 @@ class TestGenerateQuizTask:
 
     @patch("documents.services.quiz.create_quiz_from_topics")
     def test_save_quiz_success(self, mock_create_quiz, user, document):
-        test_obj = Test(id=1, user=user)
-        mock_create_quiz.return_value = test_obj
+        quiz_obj = Quiz(id=1, user=user)
+        mock_create_quiz.return_value = quiz_obj
 
         saved_test, error = _save_quiz(user, document, [{"q": "test"}])
-        assert saved_test == test_obj
+        assert saved_test == quiz_obj
         assert error is None
 
     @patch("documents.tasks._validate_quiz_prerequisites")
@@ -243,16 +243,16 @@ class TestGenerateQuizTask:
     ):
         mock_validate.return_value = (user, document, ["Topic 1"])
         mock_generate_data.return_value = ([{"q": "test"}], None)
-        test_obj = MagicMock()
-        test_obj.id = 100
-        mock_save_quiz.return_value = (test_obj, None)
+        quiz_obj = MagicMock()
+        quiz_obj.id = 100
+        mock_save_quiz.return_value = (quiz_obj, None)
 
         result = generate_quiz_task(
             doc_id=1, user_id=user.id, count=1, max_distance=0.5, chunks_per_question=2
         )
 
         assert result["status"] == SUCCESS_STATUS
-        assert result["test_id"] == 100
+        assert result["quiz_id"] == 100
         assert result["question_count"] == 1
 
     @patch("documents.tasks._validate_quiz_prerequisites")

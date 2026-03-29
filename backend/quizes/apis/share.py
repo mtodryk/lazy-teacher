@@ -7,16 +7,16 @@ from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema
 
 from settings.utils import ApplicationError
-from ..models import Test
+from ..models import Quiz
 from ..serializers import (
     ShareLinkResponseSerializer,
-    RetrieveTestByCodeResponseSerializer,
+    RetrieveQuizByCodeResponseSerializer,
 )
 from ..utils import generate_share_code
 
 
 class ShareLink(APIView):
-    """Get or generate share link code for a test."""
+    """Get or generate share link code for a quiz."""
 
     permission_classes = [IsAuthenticated]
     serializer_class = ShareLinkResponseSerializer
@@ -24,34 +24,34 @@ class ShareLink(APIView):
     @extend_schema(
         responses={200: ShareLinkResponseSerializer},
     )
-    def get(self, request: Request, test_id: int) -> Response:
-        """Get share link code for a test (only owner can access)."""
+    def get(self, request: Request, quiz_id: int) -> Response:
+        """Get share link code for a quiz (only owner can access)."""
         try:
-            test = Test.objects.get(id=test_id, user=request.user)
-        except Test.DoesNotExist:
-            raise NotFound("Test not found.")
+            quiz = Quiz.objects.get(id=quiz_id, user=request.user)
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found.")
 
         return Response(
-            ShareLinkResponseSerializer({"code": test.code}).data,
+            ShareLinkResponseSerializer({"code": quiz.code}).data,
         )
 
     @extend_schema(
         responses={200: ShareLinkResponseSerializer},
     )
-    def post(self, request: Request, test_id: int) -> Response:
-        """Regenerate share link code for a test (only owner can access)."""
+    def post(self, request: Request, quiz_id: int) -> Response:
+        """Regenerate share link code for a quiz (only owner can access)."""
 
         try:
-            test = Test.objects.get(id=test_id, user=request.user)
-        except Test.DoesNotExist:
-            raise NotFound("Test not found.")
+            quiz = Quiz.objects.get(id=quiz_id, user=request.user)
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found.")
 
         try:
-            test.code = generate_share_code(test.document.id)
-            test.save(update_fields=["code"])
+            quiz.code = generate_share_code(quiz.document.id)
+            quiz.save(update_fields=["code"])
 
             return Response(
-                ShareLinkResponseSerializer({"code": test.code}).data,
+                ShareLinkResponseSerializer({"code": quiz.code}).data,
                 status=status.HTTP_200_OK,
             )
         except Exception as e:
@@ -61,26 +61,26 @@ class ShareLink(APIView):
             )
 
 
-class RetrieveTestByCode(APIView):
-    """Retrieve test questions by share code (without answers)."""
+class RetrieveQuizByCode(APIView):
+    """Retrieve quiz questions by share code (without answers)."""
 
     permission_classes = []
-    serializer_class = RetrieveTestByCodeResponseSerializer
+    serializer_class = RetrieveQuizByCodeResponseSerializer
 
     @extend_schema(
-        responses={200: RetrieveTestByCodeResponseSerializer},
+        responses={200: RetrieveQuizByCodeResponseSerializer},
     )
     def get(self, request: Request, code: str) -> Response:
-        """Get test questions by code without answers."""
+        """Get quiz questions by code without answers."""
         try:
-            test = Test.objects.prefetch_related("questions__answers").get(code=code, is_active=True)
-        except Test.DoesNotExist:
-            raise NotFound("Test with this code not found.")
+            quiz = Quiz.objects.prefetch_related("questions__answers").get(code=code, is_active=True)
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz with this code not found.")
 
         return Response(
-            RetrieveTestByCodeResponseSerializer(
+            RetrieveQuizByCodeResponseSerializer(
                 {
-                    "test_id": test.id,
+                    "quiz_id": quiz.id,
                     "questions": [
                         {
                             "id": q.id,
@@ -94,7 +94,7 @@ class RetrieveTestByCode(APIView):
                                 for a in q.answers.all()
                             ],
                         }
-                        for q in test.questions.all()
+                        for q in quiz.questions.all()
                     ],
                 }
             ).data

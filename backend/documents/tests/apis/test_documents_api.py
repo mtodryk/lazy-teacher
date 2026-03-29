@@ -13,7 +13,7 @@ class TestListDocumentsApi:
         response = auth_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert len(response.data) == 1
-        assert response.data[0]["title"] == "Test Document"
+        assert response.data[0]["title"] == "Quiz Document"
 
     def test_list_documents_empty(self, auth_client):
         url = reverse("documents-documents")
@@ -57,7 +57,7 @@ class TestDocumentDetailApi:
         response = auth_client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert response.data["id"] == document.id
-        assert response.data["title"] == "Test Document"
+        assert response.data["title"] == "Quiz Document"
 
     def test_get_document_not_found(self, auth_client):
         url = reverse("documents-document-detail", kwargs={"doc_id": 999})

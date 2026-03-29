@@ -4,16 +4,16 @@ from django.db import models
 from documents.models import Document
 
 
-class Test(models.Model):
+class Quiz(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="tests",
+        related_name="quizes",
     )
     document = models.ForeignKey(
         Document,
         on_delete=models.CASCADE,
-        related_name="tests",
+        related_name="quizes",
     )
     code = models.CharField(max_length=100, unique=True)
     is_active = models.BooleanField(default=True)
@@ -27,8 +27,8 @@ class Test(models.Model):
 
 
 class Question(models.Model):
-    test = models.ForeignKey(
-        Test,
+    quiz = models.ForeignKey(
+        Quiz,
         on_delete=models.CASCADE,
         related_name="questions",
     )
@@ -60,9 +60,9 @@ class Answer(models.Model):
         return f"{self.text[:50]} [{mark}]"
 
 
-class TestSubmission(models.Model):
-    test = models.ForeignKey(
-        Test,
+class QuizSubmission(models.Model):
+    quiz = models.ForeignKey(
+        Quiz,
         on_delete=models.CASCADE,
         related_name="submissions",
     )
@@ -77,12 +77,12 @@ class TestSubmission(models.Model):
         ordering = ["-submitted_at"]
 
     def __str__(self) -> str:
-        return f"{self.student_name} - {self.test.code} ({self.score}/{self.max_score})"
+        return f"{self.student_name} - {self.quiz.code} ({self.score}/{self.max_score})"
 
 
 class SubmittedAnswer(models.Model):
     submission = models.ForeignKey(
-        TestSubmission,
+        QuizSubmission,
         on_delete=models.CASCADE,
         related_name="submitted_answers",
     )

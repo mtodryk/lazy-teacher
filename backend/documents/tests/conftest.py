@@ -48,7 +48,7 @@ def other_auth_client(api_client, other_user):
 def document(user):
     return Document.objects.create(
         user=user,
-        title="Test Document",
+        title="Quiz Document",
         file_name="test.pdf",
         status=Document.Status.READY,
         chunk_count=10,

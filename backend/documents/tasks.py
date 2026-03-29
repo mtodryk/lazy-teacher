@@ -304,7 +304,7 @@ def _generate_quiz_data(
 
 def _save_quiz(
     user: "User", doc: "Document", quiz_data: list
-) -> Tuple[Optional["Test"], Optional[Dict[str, Any]]]:
+) -> Tuple[Optional["Quiz"], Optional[Dict[str, Any]]]:
     """Save generated quiz to database.
 
     Returns:
@@ -313,8 +313,8 @@ def _save_quiz(
     from documents.services.quiz import create_quiz_from_topics
 
     try:
-        test = create_quiz_from_topics(user, doc, quiz_data)
-        return test, None
+        quiz = create_quiz_from_topics(user, doc, quiz_data)
+        return quiz, None
     except Exception as e:
         logger.exception(f"Failed to create quiz for doc {doc.id}")
         return None, {
@@ -351,17 +351,17 @@ def generate_quiz_task(
                 "message": "Failed to generate quiz questions",
             }
 
-        test, error = _save_quiz(user, doc, quiz_data)
+        quiz, error = _save_quiz(user, doc, quiz_data)
         if error:
             return error
 
         logger.info(
-            f"Quiz generated for document {doc_id}: test_id={test.id}, "
+            f"Quiz generated for document {doc_id}: quiz_id={quiz.id}, "
             f"questions={len(quiz_data)}"
         )
         return {
             "status": SUCCESS_STATUS,
-            "test_id": test.id,
+            "quiz_id": quiz.id,
             "question_count": len(quiz_data),
         }
 

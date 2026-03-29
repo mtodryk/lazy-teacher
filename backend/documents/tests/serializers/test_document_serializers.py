@@ -185,7 +185,7 @@ class TestDocumentItemResponseSerializer:
         serializer = DocumentItemResponseSerializer(document)
         data = serializer.data
         assert data["id"] == document.id
-        assert data["title"] == "Test Document"
+        assert data["title"] == "Quiz Document"
         assert data["status"] == "ready"
         assert data["chunk_count"] == 10
         assert "uploaded_at" in data
