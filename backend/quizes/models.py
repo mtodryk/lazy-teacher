@@ -34,6 +34,7 @@ class Question(models.Model):
     )
     text = models.TextField()
     topic = models.CharField(max_length=500, blank=True, default="")
+    source_chunks = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -99,3 +100,45 @@ class SubmittedAnswer(models.Model):
 
     def __str__(self) -> str:
         return f"Q{self.question.id}: {'Correct' if self.is_correct else 'Incorrect'}"
+
+
+class QuestionChat(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="question_chats",
+    )
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name="chats",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        unique_together = ["user", "question"]
+
+    def __str__(self) -> str:
+        return f"Chat: {self.user} → Q{self.question.id}"
+
+
+class ChatMessage(models.Model):
+    class Role(models.TextChoices):
+        USER = "user", "User"
+        ASSISTANT = "assistant", "Assistant"
+
+    chat = models.ForeignKey(
+        QuestionChat,
+        on_delete=models.CASCADE,
+        related_name="messages",
+    )
+    role = models.CharField(max_length=10, choices=Role.choices)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"[{self.role}] {self.content[:50]}"
