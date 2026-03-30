@@ -14,6 +14,6 @@ CELERY_TASK_EAGER_PROPAGATES = True
 REST_FRAMEWORK = {  # type: ignore[assignment]
     **REST_FRAMEWORK,  # type: ignore[name-defined]
     "DEFAULT_THROTTLE_RATES": {
-        "expensive_operation": "1000/min",
+        "ai_operation": "10000/hour",
     },
 }

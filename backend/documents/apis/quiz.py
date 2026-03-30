@@ -19,7 +19,7 @@ from settings.utils import ApplicationError
 class GenerateQuiz(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "expensive_operation"
+    throttle_scope = "ai_operation"
     serializer_class = QuizRequestSerializer
 
     def post(self, request: Request, doc_id: int) -> Response:

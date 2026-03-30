@@ -146,7 +146,7 @@ REST_FRAMEWORK = {
     "EXCEPTION_HANDLER": "settings.utils.custom_exception_handler",
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_THROTTLE_RATES": {
-        "expensive_operation": "1/min",
+        "ai_operation": "5/hour",
     },
 }
 

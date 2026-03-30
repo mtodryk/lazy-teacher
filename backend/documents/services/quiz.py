@@ -40,6 +40,7 @@ def create_quiz_from_topics(
                 quiz=quiz,
                 text=item["question"],
                 topic=item.get("topic", ""),
+                source_chunks=item.get("source_chunks", []),
             )
 
             options = item.get("options", [])

@@ -54,6 +54,7 @@ class QuizGenerationService:
                 topic=topic,
                 used_chunks_count=len(context.get_good_chunks(max_distance)),
                 max_distance_used=max_distance,
+                source_chunks=context.documents,
             )
         except (KeyError, IndexError, ValueError) as e:
             logger.warning("Invalid quiz data for topic '%s': %s", topic, e)

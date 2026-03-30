@@ -95,6 +95,6 @@ class DocumentURLResponseSerializer(serializers.Serializer):
 
 
 class QuizRequestSerializer(serializers.Serializer):
-    count = serializers.IntegerField(default=5, min_value=1, max_value=30)
+    count = serializers.IntegerField(default=5, min_value=1, max_value=10)
     max_distance = serializers.FloatField(default=0.5, min_value=0.0, max_value=2.0)
     chunks_per_question = serializers.IntegerField(default=3, min_value=1, max_value=10)
