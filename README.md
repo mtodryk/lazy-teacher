@@ -1,3 +1,8 @@
+## 🚀 Live Links
+
+- **Demo:** [lazy-teacher.duckdns.org](https://lazy-teacher.duckdns.org)
+- **API Docs (Swagger):** [API Documentation](https://lazy-teacher.duckdns.org/api/docs/)
+
 Lazy Teacher
 
 Platforma edukacyjna oparta na sztucznej inteligencji, stworzona w celu automatyzacji i wspomagania procesu nauczania. System składa się z nowoczesnej aplikacji frontendowej, wydajnego backendu opartego na architekturze mikroserwisów z systemem kolejkowania zadań oraz zintegrowanej bazy wektorowej do zaawansowanego przetwarzania tekstu i dokumentów.
