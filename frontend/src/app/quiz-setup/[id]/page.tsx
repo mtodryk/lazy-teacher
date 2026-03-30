@@ -93,7 +93,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
 
     const fetchQuizData = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,
@@ -173,7 +173,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
     showConfirm('Usuń pytanie', `Czy na pewno chcesz usunąć pytanie #${qIdx + 1}?`, async () => {
       closeConfirm();
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/${id}/questions/${q.id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/questions/${q.id}/`, {
           method: 'DELETE',
           headers: { Authorization: `Token ${token}` }
         });
@@ -206,7 +206,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
     showConfirm('Usuń odpowiedź', 'Czy na pewno chcesz usunąć tę odpowiedź?', async () => {
       closeConfirm();
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/${id}/questions/${q.id}/answers/${ans.id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/questions/${q.id}/answers/${ans.id}/`, {
           method: 'DELETE',
           headers: { Authorization: `Token ${token}` }
         });
@@ -236,7 +236,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
   const handleToggleStatus = async () => {
     setIsTogglingStatus(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/tests/${id}/`, {
+      const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/`, {
         method: 'PATCH',
         headers: {
           Authorization: `Token ${token}`,
@@ -270,7 +270,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
       closeConfirm();
       setIsDeletingQuiz(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/${id}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/`, {
           method: 'DELETE',
           headers: { Authorization: `Token ${token}` }
         });
@@ -299,7 +299,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
   const handleSaveChanges = async () => {
     setIsSaving(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/tests/${id}/questions/`, {
+      const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/questions/`, {
         method: 'PATCH',
         headers: {
           Authorization: `Token ${token}`,
@@ -332,7 +332,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
   const handleGenerateLink = async () => {
     setIsLinking(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/tests/${id}/generate-link/`, {
+      const res = await fetch(`${API_BASE_URL}/api/quizes/${id}/generate-link/`, {
         method: 'POST',
         headers: {
           Authorization: `Token ${token}`,

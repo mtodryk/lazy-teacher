@@ -252,7 +252,7 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       setQuizProgress(Math.min(95, Math.round(100 * (1 - Math.exp(-elapsed / 30)))));
 
       try {
-        const res = await fetch(`${API_BASE_URL}/api/documents/test-task/${taskId}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/documents/quiz-task/${taskId}/`, {
           method: 'GET',
           headers: {
             Authorization: `Token ${token}`,

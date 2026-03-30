@@ -97,7 +97,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/by-code/${quizCode}/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/by-code/${quizCode}/`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
@@ -188,7 +188,7 @@ export default function StartQuizPage({ params }: { params: Promise<{ id: string
           }))
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/tests/${quizId}/submit/`, {
+      const res = await fetch(`${API_BASE_URL}/api/quizes/${quizId}/submit/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

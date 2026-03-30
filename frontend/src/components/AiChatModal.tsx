@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 
+import { API_BASE_URL } from '@/lib/api';
+
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -52,7 +54,7 @@ export default function AiChatModal({
   );
 
   const getChatUrl = useCallback(
-    () => `http://localhost:8000/api/quizes/${quizId}/questions/${questionId}/chat/`,
+    () => `${API_BASE_URL}/api/quizes/${quizId}/questions/${questionId}/chat/`,
     [quizId, questionId]
   );
 
@@ -60,7 +62,7 @@ export default function AiChatModal({
     async (taskId: string) => {
       const hdrs = getHeaders();
       const poll = async (): Promise<ChatMessage[]> => {
-        const res = await fetch(`http://localhost:8000/api/quizes/chat-task/${taskId}/`, { headers: hdrs });
+        const res = await fetch(`${API_BASE_URL}/api/quizes/chat-task/${taskId}/`, { headers: hdrs });
         if (!res.ok) throw new Error('Poll failed');
         const data = await res.json();
         if (data.status === 'SUCCESS') return data.messages || [];

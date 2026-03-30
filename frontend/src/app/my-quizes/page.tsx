@@ -70,7 +70,7 @@ export default function MyQuizesPage() {
 
     const fetchQuizes = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/tests/`, {
+        const res = await fetch(`${API_BASE_URL}/api/quizes/`, {
           headers: {
             Authorization: `Token ${token}`,
             'Content-Type': 'application/json'
@@ -128,7 +128,7 @@ export default function MyQuizesPage() {
 
     setLoadingSubmissions(quizId);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/tests/${quizId}/submissions/`, {
+      const res = await fetch(`${API_BASE_URL}/api/quizes/${quizId}/submissions/`, {
         headers: {
           Authorization: `Token ${token}`,
           'Content-Type': 'application/json'
