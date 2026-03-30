@@ -71,8 +71,8 @@ Podział Zadań w Zespole
 
 Poniżej znajduje się przypisanie odpowiedzialności za poszczególne moduły systemu w naszym zespole:
 
-| Maksym Todryk | Data base/AI Developer |  | 
-| Tomasz Bieńkowski | Backend Developer |  | 
+| Maksym Todryk | Data base/AI Developer | Stworzenie systemu baz danych, ustawienie komunikacji z agentem AI | 
+| Tomasz Bieńkowski | Backend Developer | Struktury Quizów, Rozwiązania funkcjinalne - endpointy | 
 | Bartosz Wdowiak | Frontend Developer | Konfiguracja Next.js, interfejs wgrywania plików, rozwiązywania quizów, autoryzacja po stronie klienta. | 
 
 
