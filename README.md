@@ -73,7 +73,7 @@ Poniżej znajduje się przypisanie odpowiedzialności za poszczególne moduły s
 
 | Maksym Todryk | Data base/AI Developer | Stworzenie systemu baz danych, ustawienie komunikacji z agentem AI | 
 | Tomasz Bieńkowski | Backend Developer | Struktury Quizów, Rozwiązania funkcjinalne - endpointy | 
-| Bartosz Wdowiak | Frontend Developer | Konfiguracja Next.js, interfejs wgrywania plików, rozwiązywania quizów, autoryzacja po stronie klienta. | 
+| Bartosz Wdowiak | Frontend Developer | Konfiguracja Next.js, interfejs wizualny aplikacji, autoryzacja po stronie klienta. | 
 
 
 
