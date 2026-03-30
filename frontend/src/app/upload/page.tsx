@@ -86,7 +86,7 @@ export default function UploadPage() {
       <div className="bg-slate-900 rounded-xl border border-slate-800 p-8 shadow-2xl">
         <h1 className="text-3xl font-bold text-yellow-400 mb-2">Wgraj nowe materiały</h1>
         <p className="text-slate-400 mb-8">
-          Wgraj swoje notatki w formacie PDF, a LazyTeacher wygeneruje dla Ciebie test.
+          Wgraj swoje notatki w formacie PDF, a LazyTeacher wygeneruje dla Ciebie quiz.
         </p>
 
         <div

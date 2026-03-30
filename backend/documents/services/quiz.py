@@ -2,8 +2,8 @@ from typing import List, Dict, Any
 
 from django.db import transaction
 
-from tests.models import Answer, Question, Test
-from tests.utils import generate_share_code
+from quizes.models import Answer, Question, Quiz
+from quizes.utils import generate_share_code
 
 from ..models import Document
 
@@ -12,13 +12,13 @@ def create_quiz_from_topics(
     user,
     document: Document,
     quiz_data: List[Dict[str, Any]],
-) -> Test:
+) -> Quiz:
     """
-    Create a test with questions and answers from quiz data.
+    Create a quiz with questions and answers from quiz data.
 
     Args:
-        user: The user who owns the test
-        document: The document associated with the test
+        user: The user who owns the quiz
+        document: The document associated with the quiz
         quiz_data: List of question dictionaries with keys:
                   - 'question': question text
                   - 'topic': (optional) topic name
@@ -26,10 +26,10 @@ def create_quiz_from_topics(
                   - 'correct_index': index of the correct answer
 
     Returns:
-        Test: The created test object
+        Quiz: The created quiz object
     """
     with transaction.atomic():
-        test = Test.objects.create(
+        quiz = Quiz.objects.create(
             user=user,
             document=document,
             code=generate_share_code(document.id),
@@ -37,9 +37,10 @@ def create_quiz_from_topics(
 
         for item in quiz_data:
             question = Question.objects.create(
-                test=test,
+                quiz=quiz,
                 text=item["question"],
                 topic=item.get("topic", ""),
+                source_chunks=item.get("source_chunks", []),
             )
 
             options = item.get("options", [])
@@ -52,4 +53,4 @@ def create_quiz_from_topics(
                 ]
             )
 
-        return test
+        return quiz

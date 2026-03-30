@@ -7,8 +7,8 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
-from tests.models import Test
-from tests.serializers import TestResponseSerializer
+from quizes.models import Quiz
+from quizes.serializers import QuizResponseSerializer
 
 from ..models import Document, TopicExtractionResult
 from ..tasks import generate_quiz_task
@@ -19,7 +19,7 @@ from settings.utils import ApplicationError
 class GenerateQuiz(APIView):
     permission_classes = [IsAuthenticated]
     throttle_classes = [ScopedRateThrottle]
-    throttle_scope = "expensive_operation"
+    throttle_scope = "ai_operation"
     serializer_class = QuizRequestSerializer
 
     def post(self, request: Request, doc_id: int) -> Response:
@@ -55,7 +55,7 @@ class GenerateQuiz(APIView):
         )
 
 
-class TestTaskStatus(APIView):
+class QuizTaskStatus(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, task_id: str) -> Response:
@@ -76,19 +76,19 @@ class TestTaskStatus(APIView):
                     extra={"details": task_result.get("details", {})},
                 )
 
-            test_id = (
-                task_result.get("test_id") if isinstance(task_result, dict) else None
+            quiz_id = (
+                task_result.get("quiz_id") if isinstance(task_result, dict) else None
             )
-            response_data = {"status": "SUCCESS", "test_id": test_id}
+            response_data = {"status": "SUCCESS", "quiz_id": quiz_id}
 
-            if test_id:
+            if quiz_id:
                 try:
-                    test = Test.objects.prefetch_related("questions__answers").get(
-                        pk=test_id, user=request.user
+                    quiz = Quiz.objects.prefetch_related("questions__answers").get(
+                        pk=quiz_id, user=request.user
                     )
-                    response_data["test"] = TestResponseSerializer(test).data
+                    response_data["quiz"] = QuizResponseSerializer(quiz).data
                 except ObjectDoesNotExist:
-                    response_data["message"] = "Quiz generated, but test not found."
+                    response_data["message"] = "Quiz generated, but quiz not found."
 
             return Response(response_data)
 

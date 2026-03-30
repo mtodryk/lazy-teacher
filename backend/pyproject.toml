@@ -1,0 +1,38 @@
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "settings.test_settings"
+pythonpath = ["."]
+testpaths = ["documents/tests", "quizes/tests", "users/tests"]
+python_files = ["test_*.py", "apis.py", "serialized.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short --strict-markers --cov=. --cov-report=term-missing --cov-report=html:htmlcov"
+filterwarnings = [
+    "ignore::pytest.PytestCollectionWarning"
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks integration tests"
+]
+
+[tool.coverage.run]
+source = ["."]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "conftest.py",
+    "manage.py",
+    "settings/*"
+]
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __str__",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass"
+]

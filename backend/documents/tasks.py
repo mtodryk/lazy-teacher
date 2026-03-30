@@ -304,7 +304,7 @@ def _generate_quiz_data(
 
 def _save_quiz(
     user: "User", doc: "Document", quiz_data: list
-) -> Tuple[Optional["Test"], Optional[Dict[str, Any]]]:
+) -> Tuple[Optional["Quiz"], Optional[Dict[str, Any]]]:
     """Save generated quiz to database.
 
     Returns:
@@ -313,8 +313,8 @@ def _save_quiz(
     from documents.services.quiz import create_quiz_from_topics
 
     try:
-        test = create_quiz_from_topics(user, doc, quiz_data)
-        return test, None
+        quiz = create_quiz_from_topics(user, doc, quiz_data)
+        return quiz, None
     except Exception as e:
         logger.exception(f"Failed to create quiz for doc {doc.id}")
         return None, {
@@ -351,17 +351,17 @@ def generate_quiz_task(
                 "message": "Failed to generate quiz questions",
             }
 
-        test, error = _save_quiz(user, doc, quiz_data)
+        quiz, error = _save_quiz(user, doc, quiz_data)
         if error:
             return error
 
         logger.info(
-            f"Quiz generated for document {doc_id}: test_id={test.id}, "
+            f"Quiz generated for document {doc_id}: quiz_id={quiz.id}, "
             f"questions={len(quiz_data)}"
         )
         return {
             "status": SUCCESS_STATUS,
-            "test_id": test.id,
+            "quiz_id": quiz.id,
             "question_count": len(quiz_data),
         }
 
@@ -373,4 +373,124 @@ def generate_quiz_task(
             "status": ERROR_STATUS,
             "message": "Unexpected error during quiz generation",
             "details": {"error_type": type(exc).__name__},
+        }
+
+
+def _resolve_source_chunks(question) -> list[str]:
+    """Return source_chunks from the question, falling back to ChromaDB if empty."""
+    if question.source_chunks:
+        return question.source_chunks
+
+    try:
+        from documents.services.chroma_client import get_chroma_collection
+        from documents.services.chroma_retriever import ChromaRetriever
+
+        doc = question.quiz.document
+        context = ChromaRetriever(get_chroma_collection()).retrieve_for_topics(
+            topics=[question.topic or question.text[:200]],
+            max_results=3,
+            doc_id=doc.id,
+        )
+        chunks = []
+        for ctx in context.values():
+            chunks.extend(ctx.documents)
+
+        if chunks:
+            question.source_chunks = chunks
+            question.save(update_fields=["source_chunks"])
+
+        return chunks
+    except Exception:
+        logger.exception(
+            "Failed to retrieve fallback chunks for question %s", question.id
+        )
+        return []
+
+
+@shared_task(bind=True, max_retries=1, default_retry_delay=10)
+def generate_explanation_task(
+    self,
+    chat_id: int,
+    question_id: int,
+) -> Dict[str, Any]:
+    from documents.services.explanation import generate_explanation
+    from quizes.models import ChatMessage, Question, QuestionChat
+
+    try:
+        chat = QuestionChat.objects.get(id=chat_id)
+    except QuestionChat.DoesNotExist:
+        return {"status": ERROR_STATUS, "message": "Chat not found"}
+
+    try:
+        question = Question.objects.select_related("quiz__document").get(id=question_id)
+    except Question.DoesNotExist:
+        return {"status": ERROR_STATUS, "message": "Question not found"}
+
+    correct_answer = question.answers.filter(is_correct=True).first()
+    if not correct_answer:
+        return {"status": ERROR_STATUS, "message": "No correct answer found"}
+
+    source_chunks = _resolve_source_chunks(question)
+
+    try:
+        explanation = generate_explanation(
+            question_text=question.text,
+            correct_answer_text=correct_answer.text,
+            source_chunks=source_chunks,
+        )
+
+        ChatMessage.objects.create(
+            chat=chat,
+            role=ChatMessage.Role.ASSISTANT,
+            content=explanation,
+        )
+
+        return {"status": SUCCESS_STATUS, "chat_id": chat_id}
+    except Exception as e:
+        logger.exception(f"Explanation generation failed for chat {chat_id}")
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=e)
+        return {
+            "status": ERROR_STATUS,
+            "message": "Explanation generation failed",
+            "details": {"error_type": type(e).__name__},
+        }
+
+
+@shared_task(bind=True, max_retries=1, default_retry_delay=10)
+def generate_followup_task(
+    self,
+    chat_id: int,
+    user_message: str,
+    chat_history: list[dict],
+) -> Dict[str, Any]:
+    from documents.services.explanation import generate_followup
+    from quizes.models import ChatMessage, QuestionChat
+
+    try:
+        chat = QuestionChat.objects.get(id=chat_id)
+    except QuestionChat.DoesNotExist:
+        return {"status": ERROR_STATUS, "message": "Chat not found"}
+
+    try:
+        followup_response = generate_followup(
+            chat_history=chat_history,
+            user_message=user_message,
+        )
+
+        ChatMessage.objects.create(
+            chat=chat,
+            role=ChatMessage.Role.ASSISTANT,
+            content=followup_response,
+        )
+
+        return {"status": SUCCESS_STATUS, "chat_id": chat_id}
+    except Exception as e:
+        logger.exception(f"Followup generation failed for chat {chat_id}")
+        if self.request.retries < self.max_retries:
+            raise self.retry(exc=e)
+        return {
+            "status": ERROR_STATUS,
+            "message": "Followup generation failed",
+            "details": {"error_type": type(e).__name__},
         }

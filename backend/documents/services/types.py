@@ -14,6 +14,7 @@ class QuestionData:
     topic: str = ""
     used_chunks_count: int = 0
     max_distance_used: float = 0.0
+    source_chunks: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -35,6 +36,7 @@ class QuizData:
                 "topic": q.topic,
                 "used_chunks_count": q.used_chunks_count,
                 "max_distance_used": q.max_distance_used,
+                "source_chunks": q.source_chunks,
             }
             for q in self.questions
         ]

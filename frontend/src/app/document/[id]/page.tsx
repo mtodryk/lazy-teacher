@@ -29,6 +29,9 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
   const [isManaging, setIsManaging] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  // Quiz question count
+  const [questionCount, setQuestionCount] = useState(5);
+
   // Toast notifications
   const [toasts, setToasts] = useState<{ id: number; message: string; type: 'error' | 'info' }[]>([]);
 
@@ -212,10 +215,15 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
         headers: {
           Authorization: `Token ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ count: questionCount })
       });
 
       if (res.status === 404) notFound();
+      if (res.status === 429) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || 'Przekroczono limit zapytań. Spróbuj ponownie za chwilę.');
+      }
       if (!res.ok) throw new Error('Nie udało się zlecić generowania quizu.');
 
       const data = await res.json();
@@ -259,12 +267,12 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
         if (data.status === 'SUCCESS') {
           clearInterval(interval);
           setQuizProgress(100);
-          const testId = data.test_id;
-          if (testId) {
+          const quizId = data.quiz_id;
+          if (quizId) {
             // Small delay to show 100% before redirecting
-            setTimeout(() => router.push(`/quiz-setup/${testId}`), 600);
+            setTimeout(() => router.push(`/quiz-setup/${quizId}`), 600);
           } else {
-            showToast('Quiz wygenerowany, ale nie zwrócono ID testu.');
+            showToast('Quiz wygenerowany, ale nie zwrócono ID quizu.');
             setIsGenerating(false);
           }
         } else if (data.status === 'FAILURE') {
@@ -411,13 +419,43 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                   ></path>
                 </svg>
               </div>
-              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Testu</h3>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-4 uppercase tracking-tight">Start Quizu</h3>
 
               {!isGenerating ? (
                 <>
-                  <p className="text-zinc-500 mb-8 text-sm leading-relaxed max-w-[200px]">
+                  <p className="text-zinc-500 mb-6 text-sm leading-relaxed max-w-[200px]">
                     Przejdź do generowania pytań i przygotowania quizu.
                   </p>
+                  <div className="w-full mb-6">
+                    <label className="text-[10px] uppercase font-black tracking-widest text-zinc-500 mb-2 block text-left pl-2">
+                      Liczba pytań
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setQuestionCount((c) => Math.max(1, c - 1))}
+                        className="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-black rounded-xl transition-all active:scale-95 border border-zinc-700 text-lg"
+                      >
+                        −
+                      </button>
+                      <input
+                        type="number"
+                        min={1}
+                        max={10}
+                        value={questionCount}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value);
+                          if (!isNaN(val)) setQuestionCount(Math.max(1, Math.min(10, val)));
+                        }}
+                        className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-center text-lg font-bold focus:outline-none focus:border-yellow-400/50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                      />
+                      <button
+                        onClick={() => setQuestionCount((c) => Math.min(10, c + 1))}
+                        className="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-black rounded-xl transition-all active:scale-95 border border-zinc-700 text-lg"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
                   <button
                     onClick={handleGenerateQuiz}
                     className="w-full py-5 bg-yellow-400 hover:bg-yellow-300 text-black font-black rounded-2xl transition-all active:scale-95 uppercase tracking-tighter shadow-xl border-b-4 border-yellow-600"

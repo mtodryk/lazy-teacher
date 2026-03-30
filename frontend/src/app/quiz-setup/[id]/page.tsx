@@ -46,7 +46,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
   const [linkCopied, setLinkCopied] = useState(false);
   const [isActive, setIsActive] = useState<boolean | null>(null);
   const [isTogglingStatus, setIsTogglingStatus] = useState(false);
-  const [isDeletingTest, setIsDeletingTest] = useState(false);
+  const [isDeletingQuiz, setIsDeletingQuiz] = useState(false);
 
   const [asyncError, setAsyncError] = useState<Error | null>(null);
 
@@ -91,7 +91,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
     }
     if (!token) return;
 
-    const fetchTestData = async () => {
+    const fetchQuizData = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/api/tests/${id}/`, {
           method: 'GET',
@@ -114,7 +114,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
           setQuestions(data.questions);
         }
 
-        // Set test status
+        // Set quiz status
         if (typeof data.is_active === 'boolean') {
           setIsActive(data.is_active);
         }
@@ -133,7 +133,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
       }
     };
 
-    fetchTestData();
+    fetchQuizData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, token]);
 
@@ -251,7 +251,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
       if (res.status === 404) notFound();
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        showToast(data.message || 'Nie udało się zmienić statusu testu.');
+        showToast(data.message || 'Nie udało się zmienić statusu quizu.');
         return;
       }
       const data = await res.json();
@@ -265,10 +265,10 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
     }
   };
 
-  const handleDeleteTest = async () => {
-    showConfirm('Usuń test', 'Czy na pewno chcesz usunąć ten test? Tej operacji nie można cofnąć.', async () => {
+  const handleDeleteQuiz = async () => {
+    showConfirm('Usuń quiz', 'Czy na pewno chcesz usunąć ten quiz? Tej operacji nie można cofnąć.', async () => {
       closeConfirm();
-      setIsDeletingTest(true);
+      setIsDeletingQuiz(true);
       try {
         const res = await fetch(`${API_BASE_URL}/api/tests/${id}/`, {
           method: 'DELETE',
@@ -281,17 +281,17 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
         if (res.status === 404) notFound();
         if (!res.ok) {
           const data = await res.json().catch(() => ({}));
-          showToast(data.message || 'Nie udało się usunąć testu.');
+          showToast(data.message || 'Nie udało się usunąć quizu.');
           return;
         }
-        showToast('Test został usunięty.', 'info');
-        setTimeout(() => router.push('/my-tests'), 1500);
+        showToast('Quiz został usunięty.', 'info');
+        setTimeout(() => router.push('/my-quizes'), 1500);
       } catch (err: any) {
         if (err.digest === 'NEXT_NOT_FOUND') throw err;
         console.error(err);
         setAsyncError(err);
       } finally {
-        setIsDeletingTest(false);
+        setIsDeletingQuiz(false);
       }
     });
   };
@@ -578,7 +578,7 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
                       ></path>
                     </svg>
                   </div>
-                  <h4 className="text-sm font-black text-white uppercase italic tracking-tight">Link do testu</h4>
+                  <h4 className="text-sm font-black text-white uppercase italic tracking-tight">Link do quizu</h4>
                 </div>
                 <div className="bg-zinc-950 border border-yellow-400/20 p-3 rounded-xl mb-3">
                   <a
@@ -636,11 +636,11 @@ export default function QuizSetupPage({ params }: { params: Promise<{ id: string
 
                 <div className="h-px bg-zinc-800 w-full my-4"></div>
                 <button
-                  onClick={handleDeleteTest}
-                  disabled={isDeletingTest}
+                  onClick={handleDeleteQuiz}
+                  disabled={isDeletingQuiz}
                   className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black rounded-xl transition-all active:scale-95 uppercase tracking-widest border-b-4 border-red-700 disabled:opacity-50 text-sm shadow-lg"
                 >
-                  {isDeletingTest ? 'Usuwanie...' : 'Usuń test'}
+                  {isDeletingQuiz ? 'Usuwanie...' : 'Usuń quiz'}
                 </button>
               </div>
             </div>
