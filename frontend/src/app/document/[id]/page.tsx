@@ -219,6 +219,10 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
       });
 
       if (res.status === 404) notFound();
+      if (res.status === 429) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.detail || 'Przekroczono limit zapytań. Spróbuj ponownie za chwilę.');
+      }
       if (!res.ok) throw new Error('Nie udało się zlecić generowania quizu.');
 
       const data = await res.json();
@@ -435,16 +439,16 @@ export default function DocumentLoadingPage({ params }: { params: Promise<{ id: 
                       <input
                         type="number"
                         min={1}
-                        max={30}
-                        value={questionCount}
-                        onChange={(e) => {
-                          const val = parseInt(e.target.value);
-                          if (!isNaN(val)) setQuestionCount(Math.max(1, Math.min(30, val)));
+                      max={10}
+                      value={questionCount}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val)) setQuestionCount(Math.max(1, Math.min(10, val)));
                         }}
                         className="flex-1 bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-center text-lg font-bold focus:outline-none focus:border-yellow-400/50 transition-colors [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <button
-                        onClick={() => setQuestionCount((c) => Math.min(30, c + 1))}
+                        onClick={() => setQuestionCount((c) => Math.min(10, c + 1))}
                         className="w-12 h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-black rounded-xl transition-all active:scale-95 border border-zinc-700 text-lg"
                       >
                         +
