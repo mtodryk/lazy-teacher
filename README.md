@@ -81,6 +81,78 @@ Poniżej znajduje się przypisanie odpowiedzialności za poszczególne moduły s
 | Bartosz Wdowiak | Frontend Developer | Konfiguracja Next.js, interfejs wizualny aplikacji, autoryzacja po stronie klienta. | 
 
 
+----------------------------------------------------------------WYMAGANIA----------------------------------------------------------------
+
+
+Wymagania techniczne:
+
+● Piszemy w języku Python, korzystając z frameworku Django. ✓
+
+● Można korzystać ze wszystkich bibliotek pythonowych, jakie się tylko Wam zamarzą. ✓
+
+● Kod gry powinien być przejrzysty i czysty: ✓
+
+○ wszelkie obiekty, moduły etc. powinny mieć sensowne nazwy i zakresy działania. ✓
+
+○ Projekt należy w sensowny, logiczny sposób podzielić na funkcje, klasy itd. ✓
+
+○ Struktura projektu powinna być logiczna i przemyślana, a katalogi pozbawione zbędnych 
+plików, pliki zaś – zbędnego kodu. ✓
+
+○ Powinien być uzupełniony o dokumentację pozwalającą go w pełni zrozumieć bez 
+żadnych dodatkowych wyjaśnień - patrz ten plik README ✓
+
+○ Patrz: PEP8, Czysty kod. Podręcznik dobrego programisty. ✓
+
+● Wszystkie ważne dodatkowe treści, jeśli takie się pojawią, powinny być umieszczone w 
+odpowiednich plikach (readme, requirements, licence, etc.). ✓
+
+
+Elementy niezbędne:
+
+● Przynajmniej 5 podstron; -> home, login, register, upload, my-quizes itd. ✓
+
+● Komunikacja z bazą danych: przesył danych w dwie strony (np. CRUD – Create, Read, Update, 
+Delete); -> jest do quizów, pytań, submissions, itp. ✓
+
+● Wykorzystanie widoków opartych na funkcjach (function-based views) lub klasach (class-based 
+views);  -> widoki klasowe w folderach apis ✓
+
+● Przynajmniej 5 modeli danych w bazie z odpowiednią relacją między nimi (np. OneToMany, 
+ManyToMany); -> documents, topics, questions, answers, quizes, submissions, users. ✓
+
+● Przynajmniej 1 formularz na stronie (np. rejestracyjny, kontaktowy, dodawania danych do bazy); -> formularz rejestracji ✓
+
+● Obsługa błędów 404 i 500 (np. własne szablony dla tych błędów); -> obsługujemy błędy, własny szablon jak na zdjęciu ✓
+
+
+<img width="2560" height="1222" alt="Zrzut ekranu (159)" src="https://github.com/user-attachments/assets/f5b51d61-7f1f-4432-bff5-f4b20c558023" />
+
+● Przynajmniej trzy polecenia w manage.py stworzone samodzielnie (np. import danych z pliku 
+CSV, usuwanie przestarzałych rekordów); -> backend/quizes/management/commands - submmisions_count, test_count, user_count ✓
+
+● Testy najważniejszych funkcjonalności -> testy w quizes, documents, users ✓
+
+<img width="942" height="926" alt="изображение(1)" src="https://github.com/user-attachments/assets/b8b34e39-5d2b-40ec-8c5d-d0c94ec1fe9e" />
+
+
+Dodatkowo, strona internetowa powinna zawierać 
+przynajmniej trzy z poniższych opcji:
+
+● Stylizacja z wykorzystaniem CSS lub frameworka (np. Bootstrap, Tailwind); -> W frontend/src/app nasze strony korzystają z Tailwinda ✓
+
+● Możliwość tworzenia kont przez użytkowników: przynajmniej konta zwykłego i administratora, 
+oraz logowania; -> Jest ✓
+
+● Chat AI – np. Gemini, ChatGPT; -> gpt 4.0 wyjaśnia odpowiedzi, RAG z możliwością wyczyszczenia konwersacji ✓
+
+<img width="1140" height="871" alt="изображение" src="https://github.com/user-attachments/assets/a63901c1-e309-4ea1-93d0-714706282445" />
+
+● Możliwość tworzenia/dodawania postów/artykułów/ankiet; -> możliwość wrzucania dokumentów, tworzenia quizów na ich podstawie ✓
+
+● Inne zaawansowane opcje. -> automatyczne generowanie quizów, pytań, odpowiedzi. Udostępnianie quizów podmiotom trzecim bez autoryzacji ✓
+
+------------------------------------------------------------------------------------------------------------------------
 
  Uruchomienie Projektu (Development)
 
@@ -105,3 +177,8 @@ Uruchomienie frontend
 cd frontend
 npm install
 npm run dev
+
+
+
+
+
