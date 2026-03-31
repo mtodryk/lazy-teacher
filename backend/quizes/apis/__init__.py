@@ -3,7 +3,6 @@ from .questions import QuizQuestions, QuestionDetail
 from .answers import AnswerDetail
 from .share import ShareLink, RetrieveQuizByCode
 from .submit import SubmitQuiz, QuizSubmissionsView
-from .chat import QuestionChatView, ChatTaskStatusView
 
 __all__ = [
     "ListQuizes",
@@ -15,6 +14,4 @@ __all__ = [
     "RetrieveQuizByCode",
     "SubmitQuiz",
     "QuizSubmissionsView",
-    "QuestionChatView",
-    "ChatTaskStatusView",
 ]

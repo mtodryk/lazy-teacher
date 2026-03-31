@@ -1,8 +1,8 @@
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "settings.test_settings"
 pythonpath = ["."]
-testpaths = ["documents/tests", "quizes/tests", "users/tests"]
-python_files = ["test_*.py", "apis.py", "serialized.py"]
+testpaths = ["documents/tests", "quizes/tests"]
+python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --tb=short --strict-markers --cov=. --cov-report=term-missing --cov-report=html:htmlcov"

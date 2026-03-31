@@ -10,8 +10,6 @@ from .apis import (
     RetrieveQuizByCode,
     SubmitQuiz,
     QuizSubmissionsView,
-    QuestionChatView,
-    ChatTaskStatusView,
 )
 
 urlpatterns = [
@@ -51,15 +49,5 @@ urlpatterns = [
         "<int:quiz_id>/submissions/",
         QuizSubmissionsView.as_view(),
         name="quiz_submissions",
-    ),
-    path(
-        "<int:quiz_id>/questions/<int:question_id>/chat/",
-        QuestionChatView.as_view(),
-        name="question_chat",
-    ),
-    path(
-        "chat-task/<str:task_id>/",
-        ChatTaskStatusView.as_view(),
-        name="chat_task_status",
     ),
 ]
