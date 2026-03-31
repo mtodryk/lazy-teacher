@@ -1,14 +1,3 @@
-"""
-Тесты для backend/tests/apis/questions.py
-
-Расположение: backend/tests/tests/apis/quiz_questions_api.py
-
-Обоснование: questions.py содержит API views TestQuestions и QuestionDetail,
-принадлежащие Django-приложению 'tests'. По нашей конвенции тесты API
-размещаются в tests/<app>/apis/. Имя файла quiz_questions_api.py отражает
-тестируемый модуль.
-"""
-
 import pytest
 from django.urls import reverse
 from rest_framework import status
