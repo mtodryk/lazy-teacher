@@ -121,8 +121,8 @@ services:
       - django_static:/var/www/static:ro
       - nextjs_static:/var/www/nextjs-static:ro
       - nextjs_public:/var/www/public:ro
-      - /etc/letsencrypt/live/lazy-teacher.duckdns.org/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
-      - /etc/letsencrypt/live/lazy-teacher.duckdns.org/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
+      - /etc/letsencrypt/live/lazy-teacher.hackvisa.online/fullchain.pem:/etc/nginx/ssl/fullchain.pem:ro
+      - /etc/letsencrypt/live/lazy-teacher.hackvisa.online/privkey.pem:/etc/nginx/ssl/privkey.pem:ro
     depends_on:
       - backend
       - frontend
