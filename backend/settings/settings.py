@@ -162,9 +162,7 @@ SPECTACULAR_SETTINGS = {
 # RAG / Vector Store configuration
 CHROMA_HOST = os.environ.get("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.environ.get("CHROMA_PORT", "8001"))
-EMBEDDING_MODEL_NAME = os.environ.get(
-    "EMBEDDING_MODEL_NAME", "nomic-ai/nomic-embed-text-v1.5"
-)
+EMBEDDING_MODEL_NAME = os.environ.get("EMBEDDING_MODEL_NAME", "all-MiniLM-L6-v2")
 # Swap this to a cloud-backed class when migrating to hosted vector DB
 # RAG_VECTOR_STORE_BACKEND = "documents.services.vector_store.ChromaVectorStore"
 RAG_CHUNK_SIZE = 800
