@@ -1,6 +1,6 @@
 ## 🚀 Live Links
 
-- **Demo:** [lazy-teacher.duckdns.org](https://lazy-teacher.hackvisa.online)
+- **Demo:** [lazy-teacher.hackvisa.online](https://lazy-teacher.hackvisa.online)
 - **API Docs (Swagger):** [API Documentation](https://lazy-teacher.hackvisa.online/api/docs/)
 
 Lazy Teacher
